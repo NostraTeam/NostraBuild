@@ -7,10 +7,10 @@ nostra_project(NostraCppTestProject ntp
     DESCRIPTION "A test project."
     LANGUAGES CXX)
 
-add_library(CTestLib STATIC "src/component.cpp")
-add_library(Nostra::CTestLib ALIAS CTestLib)
+add_library(CppTestLib STATIC "src/component.cpp")
+add_library(Nostra::CppTestLib ALIAS CppTestLib)
 
-target_include_directories(CTestLib
+target_include_directories(CppTestLib
 	PUBLIC
         "include")
 
@@ -18,4 +18,4 @@ include(CTest)
 
 enable_testing()
 
-nostra_add_cpp_test("component.wt" TEST_TARGET "Nostra::CTestLib" ADDITIONAL_SOURCES "source.cpp")
+nostra_add_cpp_test("component.wt" TEST_TARGET "Nostra::CppTestLib" ADDITIONAL_SOURCES "source.cpp")

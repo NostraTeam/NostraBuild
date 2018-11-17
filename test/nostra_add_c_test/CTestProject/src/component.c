@@ -1,7 +1,14 @@
 
 #include "nostra/testproject/component.h"
 
-int test()
+#ifdef __cplusplus
+extern "C"
 {
-    return 0;
+#endif
+    int test()
+    {
+        return 0;
+    }
+#ifdef __cplusplus
 }
+#endif
