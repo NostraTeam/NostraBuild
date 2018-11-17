@@ -19,3 +19,4 @@ include(CTest)
 enable_testing()
 
 nostra_add_cpp_test("component.wt" TEST_TARGET "Nostra::CppTestLib" ADDITIONAL_SOURCES "source.cpp")
+nostra_add_cpp_test("component.1.wt" TEST_TARGET "Nostra::CppTestLib" NOCOPY)
