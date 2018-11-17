@@ -1,0 +1,5 @@
+
+namespace ntp
+{
+    int test();
+}
