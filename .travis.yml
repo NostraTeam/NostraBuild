@@ -1,0 +1,11 @@
+os:
+  - osx
+  - linux
+  - windows
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -- -j2
+  - ctest --output-on-failure
+  
