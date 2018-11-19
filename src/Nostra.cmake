@@ -125,6 +125,13 @@ function(_nostra_copy_resources_dir RESOURCE_IN RESOURCE_OUT)
     endif()
 endfunction()
 
+macro(_nostra_check_if_nostra_project)
+    if(NOT DEFINED PROJECT_PREFIX)
+        message(SEND_ERROR "PROJECT_PREFIX is not defined, has nostra_project() been called?")
+    endif()
+endmacro()
+
+
 #[[
 # Parameters:
 #   - TEST_NAME:                     The name of the test. Usually something like: component.wt 
@@ -157,9 +164,7 @@ macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
     endif()
 
     # Check if PROJECT_PREFIX is defined
-    if(NOT DEFINED PROJECT_PREFIX)
-        message(SEND_ERROR "PROJECT_PREFIX is not defined, has nostra_project() been called?")
-    endif()
+    _nostra_check_if_nostra_project()
 
     # Check that there are no additional arguments
     _nostra_check_parameters()
@@ -385,3 +390,80 @@ function(_nostra_test)
         message(SEND_ERROR "Test Failed: ${STR_OUT}")
     endif()
 endfunction()
+
+function(_nostra_check_if_lib TARGET)
+
+    get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
+
+    if(NOT "${NOSTRA_CMAKE_TARGET_TYPE}" MATCHES "(SHARED|STATIC)_LIBRARY")
+        message(SEND_ERROR "Target ${TARGET} is not a shared or static library.")
+    endif()
+endfunction()
+
+function(nostra_alias_get_actual_name OUT_VAR TARGET)
+    get_target_property(ALIAS_NAME ${TARGET} ALIASED_TARGET)
+
+    if(DEFINED ALIAS_NAME)
+        set(${OUT_VAR} ${ALIAS_NAME} PARENT_SCOPE)
+    else()
+        set(${OUT_VAR} ${TARGET} PARENT_SCOPE)
+    endif()
+endfunction()
+
+macro(nostra_alias_to_actual_name VAR)
+    nostra_alias_get_actual_name(${VAR} ${${VAR}})
+endmacro()
+
+# Get the directory of this file; this needs to be outside of a function
+set(_NOSTRA_CMAKE_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
+function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
+    nostra_alias_to_actual_name(TARGET)
+
+    _nostra_check_if_nostra_project()
+    _nostra_check_if_lib(${TARGET})
+
+    set(NOSTRA_CMAKE_PREFIX "${PREFIX}")
+    string(TOUPPER "${NOSTRA_CMAKE_PREFIX}" NOSTRA_CMAKE_PREFIX)
+
+    target_compile_definitions(${TARGET} 
+            PRIVATE 
+                "${NOSTRA_CMAKE_PREFIX}_SHOULD_EXPORT")
+
+    get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
+
+    if("${NOSTRA_CMAKE_TARGET_TYPE}" STREQUAL "STATIC_LIBRARY")
+        target_compile_definitions(${TARGET} 
+            PRIVATE 
+                "${NOSTRA_CMAKE_PREFIX}_IS_STATIC_LIB")
+    endif()
+
+    if(WIN32)
+        set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__declspec(dllexport)")
+        set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__declspec(dllimport)")
+        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "")
+        set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__declspec(deprecated)")
+    elseif(APPLE OR UNIX)
+        set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "__attribute__((visibility(\"hidden\")))")
+        set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__attribute__((__deprecated__))")
+    else()
+        message(SEND_ERROR "This operating system is not supported.")
+    endif()
+
+    if(NOT DEFINED "${OUT_DIR}")
+        set(OUT_DIR "${CMAKE_BINARY_DIR}")
+    endif()
+
+    configure_file("${_NOSTRA_CMAKE_LIST_DIR}/../cmake/export.h.in" "${OUT_DIR}/export.h" @ONLY)
+endfunction()
+
+macro(nostra_generate_export_header TARGET)
+    cmake_parse_arguments(FUNC_ "" "OUTPUT_DIR" "" ${ARGN})
+
+    # Put FUNC_OUTPUT_DIR into quotes to make sure an empty string gets passed if it is not defined
+    # That way, the output directory will be the build directory
+    _nostra_generate_export_header_helper(${TARGET} ${PROJECT_PREFIX} "${FUNC_OUTPUT_DIR}")
+endmacro()
+

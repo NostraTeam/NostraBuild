@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
+option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared libraries." OFF)
+
 include("src/Nostra.cmake")
 
 include(CTest)
@@ -38,11 +40,15 @@ file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject
 # Each of these tests call the commands "cmake ..", "cmake --build .", "ctest"; in that order and all of them need
 # to be successful.
 
+if(NOSTRA_BUILD_SHARED_TESTS)
+    set(NOSTRA_CMAKE_ADDITIONAL_FLAGS "-DNOSTRA_BUILD_SHARED=${NOSTRA_BUILD_SHARED_TESTS}")
+endif()
+
 add_test(
     NAME
         "ncm.cmake.nostra_add_c_test.wt"
     COMMAND
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject/build")
       
@@ -50,6 +56,6 @@ add_test(
     NAME
         "ncm.cmake.nostra_add_cpp_test.wt"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject/build")

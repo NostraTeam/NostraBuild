@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-set(NOSTRA_CMAKE_DEBUG "ON")
+option(NOSTRA_BUILD_SHARED "If enabled, the library will be build as shared library." OFF)
+
+#set(NOSTRA_CMAKE_DEBUG "ON")
 include("${CMAKE_SOURCE_DIR}/../../../src/Nostra.cmake")
 
 nostra_project(NostraCTestProject ntp
@@ -8,7 +10,12 @@ nostra_project(NostraCTestProject ntp
     DESCRIPTION "A test project."
     LANGUAGES C)
 
-add_library(CTestLib STATIC "src/component.c")
+if(NOSTRA_BUILD_SHARED)
+    add_library(CTestLib SHARED "src/component.c")
+else()
+    add_library(CTestLib STATIC "src/component.c")
+endif()
+
 add_library(Nostra::CTestLib ALIAS CTestLib)
 
 target_include_directories(CTestLib
