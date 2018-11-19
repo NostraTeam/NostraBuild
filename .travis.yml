@@ -3,6 +3,9 @@ os:
   - linux
   - windows
 
+language:
+  - c
+
 env:
   - BUILD_SHARED=ON
   - BUILD_SHARED=OFF
