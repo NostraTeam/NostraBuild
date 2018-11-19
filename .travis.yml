@@ -3,9 +3,14 @@ os:
   - linux
   - windows
 
+env:
+  - BUILD_SHARED=ON
+  - BUILD_SHARED=OFF
+
 script:
   - mkdir build
   - cd build
-  - cmake .. -- -j2
+  - cmake -DNOSTRA_BUILD_SHARED_TESTS=$BUILD_SHARED ..
+  - cmake --build . -- -j2
   - ctest --output-on-failure
   
