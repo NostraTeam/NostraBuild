@@ -81,6 +81,7 @@ endmacro()
 #
 # These variables are used by other functions in this module.
 #]]
+# TODO: add LOGO
 macro(nostra_project NAME PREFIX)
     cmake_parse_arguments(NOSTRA_CMAKE "" "VERSION;DESCRIPTION" "LANGUAGES" "${ARGN}")
 
@@ -139,7 +140,7 @@ endmacro()
 #                                    extensions of the source files.
 #   - IN_DIR:                        The directory that the test is nested in (e.g. CMAKE_SOURCE_DIR).
 #   - OUT_DIR:                       The directory that the testfiles will be copied to if not NOCOPY 
-#                                    (e.g. CMAKE_BINARY_DIR).
+#                                    (e.g. CMAKE_CURRENT_BINARY_DIR).
 #   - NOCOPY [optional]:             If TRUE, the resources will not be copied and the working directory is somewhere 
 #                                    in a child directory of IN_DIR.
 #   - TEST_TARGET [optional]:        The target to test, i.e. to link against. 
@@ -288,11 +289,11 @@ endfunction()
 function(nostra_add_c_test TEST_NAME)
     cmake_parse_arguments(FUNC "TEST_CPP" "" "" "${ARGN}")
 
-	_nostra_add_test_helper("${TEST_NAME}" "c" "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" "${FUNC_UNPARSED_ARGUMENTS}")
+    _nostra_add_test_helper("${TEST_NAME}" "c" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${FUNC_UNPARSED_ARGUMENTS}")
 
     if(FUNC_TEST_CPP)
         # Re-Build TEST_DIR from scratch, but change <prefix>.c.<name>.d to <prefix>.c.cpp.<name>.d
-        set(CPP_TEST_DIR "${CMAKE_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.${TEST_NAME}.d")
+        set(CPP_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.${TEST_NAME}.d")
 
         #=============================
         # Copy the source dir of the test into the build dir
@@ -337,15 +338,15 @@ function(nostra_add_c_test TEST_NAME)
         #=============================
 
         # Add the actual C++ test
-        _nostra_add_test_helper("${TEST_NAME}" # Test name is still the same, but the language has changed
-                "c.cpp"                        # Language (c.cpp to distingush from regular c/cpp tests)
-                "${CMAKE_BINARY_DIR}/test/cpp" # Input dir is the directory that the files were copied into
-                "${CMAKE_BINARY_DIR}/test/cpp" # Output dir is this aswell
+        _nostra_add_test_helper("${TEST_NAME}"         # Test name is still the same, but the language has changed
+                "c.cpp"                                # Language (c.cpp to distingush from regular c/cpp tests)
+                "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Input dir is the directory that the files were copied into
+                "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Output dir is this aswell
             TEST_TARGET
-                "${FUNC_TEST_TARGET}"          # The test target is still the same
+                "${FUNC_TEST_TARGET}"                  # The test target is still the same
             ADDITIONAL_SOURCES
-                "${ADDITIONAL_SOURCES_CPP}"    # Processed file list, with .cpp added as extension
-            NOCOPY)                            # The files were already copied, no need to copy again
+                "${ADDITIONAL_SOURCES_CPP}"            # Processed file list, with .cpp added as extension
+            NOCOPY)                                    # The files were already copied, no need to copy again
     endif()
 endfunction()
 
@@ -374,7 +375,7 @@ endfunction()
 # This function can only be called, if nostra_project() was called first.
 #]]
 function(nostra_add_cpp_test TEST_NAME)
-	_nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" "${ARGN}")
+	_nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${ARGN}")
 endfunction()
 
 #[[
@@ -399,7 +400,6 @@ endfunction()
 # the function will trigger an error.
 #]]
 function(_nostra_check_if_lib TARGET)
-
     get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
 
     if(NOT "${NOSTRA_CMAKE_TARGET_TYPE}" MATCHES "(SHARED|STATIC)_LIBRARY")
@@ -416,12 +416,12 @@ endfunction()
 # will be the value of TARGET.
 #]]
 function(nostra_alias_get_actual_name OUT_VAR TARGET)
-    get_target_property(ALIAS_NAME ${TARGET} ALIASED_TARGET)
+    get_target_property(ALIAS_NAME "${TARGET}" ALIASED_TARGET)
 
     if(DEFINED ALIAS_NAME)
-        set(${OUT_VAR} ${ALIAS_NAME} PARENT_SCOPE)
+        set("${OUT_VAR}" "${ALIAS_NAME}")
     else()
-        set(${OUT_VAR} ${TARGET} PARENT_SCOPE)
+        set("${OUT_VAR}" "${TARGET}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -438,7 +438,8 @@ endfunction()
 # # Now, MY_TARGET stores the name of the actual of the target, even if it was an alias name before
 #]]
 macro(nostra_alias_to_actual_name VAR)
-    nostra_alias_get_actual_name(${VAR} ${${VAR}})
+    nostra_alias_get_actual_name(OUT_VAR ${${VAR}})
+    set("${VAR}" "${OUT_VAR}")
 endmacro()
 
 # Get the directory of this file; this needs to be outside of a function
@@ -539,15 +540,46 @@ function(nostra_message STR)
     message(STATUS "${PROJECT_NAME}: ${MESSAGE}")
 endfunction()
 
-macro(nostra_generate_doc)
-    cmake_parse_arguments(FUNC_ "" "OUT_DIR" "" ${ARGN})
+function(_nostra_is_c_enabled OUT_VAR)
+    get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
-    if(NOT DEFINED FUNC_OUT_DIR)
-        set(FUNC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
-    endif()
+    list(FIND "${LANGUAGES}" "C" ${OUT_VAR}) # Check if the language is in the list, if it is, it is enabled
+
+    set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
+endfunction()
+
+function(_nostra_is_cpp_enabled OUT_VAR)
+    get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
+
+    list(FIND "${LANGUAGES}" "CXX" ${OUT_VAR}) # Check if the language is in the list, if it is, it is enabled
+
+    set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
+endfunction()
+
+function(nostra_generate_doc)
+
+    #[[
+    # The Doxyfile uses the following CMake variables:
+    # - PROJECT_NAME
+    # - PROJECT_VERSION
+    # - PROJECT_DESCRIPTION
+    # - PROJECT_LOGO
+    # - NOSTRA_CMAKE_OUT_DIR
+    # - CMAKE_CURRENT_SOURCE_DIR
+    # - NOSTRA_CMAKE_OPTIMIZE_OUTPUT_FOR_C
+    # - NOSTRA_CMAKE_BUILTIN_STL_SUPPORT
+    # - NOSTRA_CMAKE_HAVE_DOT
+    # - NOSTRA_CMAKE_DOT_PATH
+    #]]    
+
+    cmake_parse_arguments(FUNC_ "" "OUT_DIR" "" ${ARGN})
 
     _nostra_check_parameters()
     _nostra_check_if_nostra_project()
+
+    if(NOT DEFINED FUNC_OUT_DIR)
+        set(FUNC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+    endif()
 
     # Add the option for the current project
     option(${PROJECT_PREFIX}_BUILD_DOC "If enabled, the documentation for ${PROJECT_NAME} will be built." ON)
@@ -555,34 +587,55 @@ macro(nostra_generate_doc)
     if(${PROJECT_PREFIX}_BUILD_DOC)
         find_package(Doxygen OPTIONAL_COMPONENTS dot)
 
-	    if(DOXYGEN_FOUND)
+        if(DOXYGEN_FOUND)
+            nostra_message("Doxygen: Executable was found at ${DOXYGEN_COMMAND}, documentation will be generated.")
+
+            # Handle dot usage/configuration
             if(DOXYGEN_DOT_FOUND)
                 nostra_message(STATUS "Doxygen: Found dot at ${DOXYGEN_DOT_EXECUTABLE}.")
 
                 set(NOSTRA_CMAKE_HAVE_DOT "YES")
                 set(NOSTRA_CMAKE_DOT_PATH "${DOXYGEN_DOT_EXECUTABLE}")
             else()
-                nostra_message("Doxygen: Did not find dot. Graph generation will be omitted.")
+                nostra_message("Doxygen: Could not find dot. Graph generation will be omitted.")
 
                 set(NOSTRA_CMAKE_HAVE_DOT "No")
             endif()
 
-	    	nostra_message("Doxygen executable was found, documentation will be generated.")
+            # Handle language usage/configuration
+            _nostra_is_c_enabled(IS_C_ENABLED)
+            _nostra_is_cpp_enabled(IS_CPP_ENABLED)
 
-	    	configure_file("doc/Doxyfile.in" "doc/Doxyfile")
+            # If C++ is not enabeld, Doxygen can optimize the output for C
+            if(${IS_C_ENABLED} AND NOT ${IS_CPP_ENABLED})
+                set(NOSTRA_CMAKE_OPTIMIZE_OUTPUT_FOR_C "YES")
+            else()
+                set(NOSTRA_CMAKE_OPTIMIZE_OUTPUT_FOR_C "NO")
+            endif()
+
+            # If C++ is enabled, this will optimize the doc for STL usage
+            if(${IS_CPP_ENABLED})
+                set(NOSTRA_CMAKE_BUILTIN_STL_SUPPORT "YES")
+            else()
+                set(NOSTRA_CMAKE_BUILTIN_STL_SUPPORT "NO")
+            endif()
+            # End of language usage/configuration
+
+	    	configure_file("doc/Doxyfile.in" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile")
 
 	    	add_custom_target(NostraSocketWrapperDoc
-	    		ALL COMMAND DOXYGEN_COMMAND "doc/Doxyfile"
+	    		ALL COMMAND DOXYGEN_COMMAND "${OUTPUT_DIR}/Doxyfile"
 	    		WORKING_DIRECTORY "."
-	    		COMMENT "Generating Doxygen documentation."
+	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}."
 	    		VERBATIM)
 
-	    	install(DIRECTORY "${OUT_DIR}/doc/html/"
+	    	install(DIRECTORY "${NOSTRA_CMAKE_OUT_DIR}/html/"
 	    		DESTINATION
 	    			"doc"
 	    		COMPONENT
 	    			"Documentation")
-
         else()
+            nostra_message("Doxygen executable could not be found, documentation generation will be omitted.")
+        endif()
     endif()
-endmacro()
+endfunction()
