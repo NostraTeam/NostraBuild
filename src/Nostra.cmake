@@ -409,7 +409,7 @@ endfunction()
 
 #[[
 # Parameters:
-#   - OUT_VAR. The name of the output variable.
+#   - OUT_VAR: The name of the output variable.
 #   - TARGET:  The target to get the name of.
 #
 # Stores the actual name TARGET in OUT_VAR is TARGET is an alias name. If TARGET is not a name, the value in OUT_VAR
@@ -534,12 +534,26 @@ macro(nostra_generate_export_header TARGET)
     _nostra_generate_export_header_helper(${TARGET} ${PROJECT_PREFIX} "${FUNC_OUTPUT_DIR}")
 endmacro()
 
+#[[
+# Parameters:
+#   - STR: The string to print.
+#
+# Prints a status message in the format "<project name>: <STR>".
+#
+# This function can only be called, if nostra_project() was called first.
+#]]
 function(nostra_message STR)
     _nostra_check_if_nostra_project()
 
     message(STATUS "${PROJECT_NAME}: ${MESSAGE}")
 endfunction()
 
+#[[
+# Parameters:
+#   - OUT_VAR: The name of the output variable.
+#
+# Stores in OUT_VAR whether the language C is currently enabled.
+#]]
 function(_nostra_is_c_enabled OUT_VAR)
     get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
@@ -548,6 +562,12 @@ function(_nostra_is_c_enabled OUT_VAR)
     set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
 endfunction()
 
+#[[
+# Parameters:
+#   - OUT_VAR: The name of the output variable.
+#
+# Stores in OUT_VAR whether the language C++ is currently enabled.
+#]]
 function(_nostra_is_cpp_enabled OUT_VAR)
     get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
@@ -556,8 +576,39 @@ function(_nostra_is_cpp_enabled OUT_VAR)
     set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
 endfunction()
 
+#[[
+# Parameters:
+#   - OUT_DIR [optional]: The directory in which the documentation output will be stored. If this parameter is not
+#                         given, the directory <current binary directory>/doc will be used (usually, it is not 
+#                         necessary to pass this parameter, the default value should be fine).
+#
+# Enables Doxygen based documentation generation for the current project. To allow this, the project must strictly 
+# conform to the Nostra conventions.
+#
+# The input files/directories are (all paths relative to the current source directory):
+# - doc/Doxyfile.in:       The blueprint of the Doxyfile that will be used. Will be configured using CMake's 
+#                          configure_file() (with the setting @ONLY)
+# - doc/style.css:         An additional CSS file that is used by Doxygen.
+# - doc/DoxygenLayout.xml: The layout file for doxygen.
+# - doc/:                  Aside from the files named above, all files in this directory are part of the Doxygen input. 
+#                          This can be used to add additional documentation from outside of the source code (see Nostra
+#                          conventions for more information).
+# - doc/img:               Images from this directory can be used by using the "\image" command.
+# - doc/dot:               Dot files from this directory can be used by using the "\dotfile" command.
+# - include/:              The code files that hold the documentation (only headers are documented, not source files).
+# - README.md:             The README file. Will be used as the mainpage of the documentation.
+# - examples/:             The example files.
+#
+# The output files are (all paths relative to the current source directory):
+# - <output directory>/html: The generated HTML pages.
+# - <output directory>/Doxyfile: The configured file doc/Doxyfile.in
+#
+# When installing, the contents of the directory <output directory>/html will be installed into the directory doc in 
+# the component Documentation.
+#
+# This function can only be called, if nostra_project() was called first.
+#]]
 function(nostra_generate_doc)
-
     #[[
     # The Doxyfile uses the following CMake variables:
     # - PROJECT_NAME
