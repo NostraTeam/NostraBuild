@@ -391,6 +391,13 @@ function(_nostra_test)
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#   - TARGET: The target to check.
+#
+# Checks if the passed target is a library (target property TYPE is SHARED_LIBRARY or STATIC_LIBRARY). If not, the
+# the function will trigger an error.
+#]]
 function(_nostra_check_if_lib TARGET)
 
     get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
@@ -400,6 +407,14 @@ function(_nostra_check_if_lib TARGET)
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#   - OUT_VAR. The name of the output variable.
+#   - TARGET:  The target to get the name of.
+#
+# Stores the actual name TARGET in OUT_VAR is TARGET is an alias name. If TARGET is not a name, the value in OUT_VAR
+# will be the value of TARGET.
+#]]
 function(nostra_alias_get_actual_name OUT_VAR TARGET)
     get_target_property(ALIAS_NAME ${TARGET} ALIASED_TARGET)
 
@@ -410,6 +425,18 @@ function(nostra_alias_get_actual_name OUT_VAR TARGET)
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#   - VAR: The name of the variable with the target name.
+#
+# Replaces the value of VAR with the actual name of the target stored in VAR.
+#
+# Example:
+# 
+# # MY_TARGET stores the name of a target (it is not known if it is an alias name or not)
+# nostra_alias_to_actual_name(MY_TARGET) # Important: do not expand MY_TARGET
+# # Now, MY_TARGET stores the name of the actual of the target, even if it was an alias name before
+#]]
 macro(nostra_alias_to_actual_name VAR)
     nostra_alias_get_actual_name(${VAR} ${${VAR}})
 endmacro()
@@ -417,18 +444,24 @@ endmacro()
 # Get the directory of this file; this needs to be outside of a function
 set(_NOSTRA_CMAKE_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
+# Helper for nostra_generate_export_header(). See doc of that function.
 function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
     nostra_alias_to_actual_name(TARGET)
 
     _nostra_check_if_nostra_project()
     _nostra_check_if_lib(${TARGET})
 
+    # Make the prefix upper case
     set(NOSTRA_CMAKE_PREFIX "${PREFIX}")
     string(TOUPPER "${NOSTRA_CMAKE_PREFIX}" NOSTRA_CMAKE_PREFIX)
 
-    target_compile_definitions(${TARGET} 
+    get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
+
+    if("${NOSTRA_CMAKE_TARGET_TYPE}" STREQUAL "STATIC_LIBRARY")
+        target_compile_definitions(${TARGET} 
             PRIVATE 
                 "${NOSTRA_CMAKE_PREFIX}_SHOULD_EXPORT")
+    endif()
 
     get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
 
@@ -441,7 +474,7 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
     if(WIN32)
         set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__declspec(dllexport)")
         set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__declspec(dllimport)")
-        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "")
+        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "") # no export is the default behavior on Windows
         set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__declspec(deprecated)")
     elseif(APPLE OR UNIX)
         set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
@@ -452,18 +485,104 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
         message(SEND_ERROR "This operating system is not supported.")
     endif()
 
+    # If OUT_DIR is undefined, explicitly define it. This is required b/c the next configure_file() command would put
+    # the generated file into the root directory if OUT_DIR is empty/undefined.
     if(NOT DEFINED "${OUT_DIR}")
-        set(OUT_DIR "${CMAKE_BINARY_DIR}")
+        set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
     configure_file("${_NOSTRA_CMAKE_LIST_DIR}/../cmake/export.h.in" "${OUT_DIR}/export.h" @ONLY)
 endfunction()
 
+#[=[
+# Parameters:
+#   - TARGET:                The target that the export header is generated for.
+#   - OUTPUT_DIR [optional]: The directory that the output file will be put. If this is not given, the output directory
+#                            will be CMAKE_CURRENT_BINARY_DIR.
+#
+# This function works very similar to CMake's generate_export_header() function, but it is usable without enabling C++
+# as a language. In addition to that, it is less customizable because the names are pulled from the Nostra convention.
+#
+# When included, the generated header will provide the following macros:
+# - <project prefix>_EXPORT:     Functions that are supposed to be part of the public interface of the library need to
+#                                be prefixed with this macro.
+# - <project prefix>_NO_EXPORT:  Functions that are not supposed to be part of the public interface of the library need 
+#                                to be prefixed with this macro.
+# - <project prefix>_DEPRECATED: Functions that are deprecated are supposed to be prefixed with this macro. This is a 
+#                                (better) alternative to C++'s attribute [[deprecated]], because it is compatible to C 
+#                                and older versions of C++.
+# In addition to these macros, the CMake function itself will define the macro <project prefix>_IS_STATIC_LIB if the 
+# library that is being build is a static library. If the library is a shared library, the macro is not defined (if the
+# macro is defined, it is always defined, it is not required to include the header generated by this function).
+#
+# Note: Every function should either be explicitly prefixed with <project name>_EXPORT or <project name>_NO_EXPORT,
+#       because the default behavior is different from platform to platform.
+# Note: This file should not be shared across compilers and platforms. To prevent this, it should only be stored in the
+#       build directory, not the source directory.
+#
+# This function can only be called, if nostra_project() was called first and TARGET needs to be either a
+# shared or static library.
+#]=]
 macro(nostra_generate_export_header TARGET)
     cmake_parse_arguments(FUNC_ "" "OUTPUT_DIR" "" ${ARGN})
+
+    _nostra_check_parameters()
 
     # Put FUNC_OUTPUT_DIR into quotes to make sure an empty string gets passed if it is not defined
     # That way, the output directory will be the build directory
     _nostra_generate_export_header_helper(${TARGET} ${PROJECT_PREFIX} "${FUNC_OUTPUT_DIR}")
 endmacro()
 
+function(nostra_message STR)
+    _nostra_check_if_nostra_project()
+
+    message(STATUS "${PROJECT_NAME}: ${MESSAGE}")
+endfunction()
+
+macro(nostra_generate_doc)
+    cmake_parse_arguments(FUNC_ "" "OUT_DIR" "" ${ARGN})
+
+    if(NOT DEFINED FUNC_OUT_DIR)
+        set(FUNC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
+    _nostra_check_parameters()
+    _nostra_check_if_nostra_project()
+
+    # Add the option for the current project
+    option(${PROJECT_PREFIX}_BUILD_DOC "If enabled, the documentation for ${PROJECT_NAME} will be built." ON)
+
+    if(${PROJECT_PREFIX}_BUILD_DOC)
+        find_package(Doxygen OPTIONAL_COMPONENTS dot)
+
+	    if(DOXYGEN_FOUND)
+            if(DOXYGEN_DOT_FOUND)
+                nostra_message(STATUS "Doxygen: Found dot at ${DOXYGEN_DOT_EXECUTABLE}.")
+
+                set(NOSTRA_CMAKE_HAVE_DOT "YES")
+                set(NOSTRA_CMAKE_DOT_PATH "${DOXYGEN_DOT_EXECUTABLE}")
+            else()
+                nostra_message("Doxygen: Did not find dot. Graph generation will be omitted.")
+
+                set(NOSTRA_CMAKE_HAVE_DOT "No")
+            endif()
+
+	    	nostra_message("Doxygen executable was found, documentation will be generated.")
+
+	    	configure_file("doc/Doxyfile.in" "doc/Doxyfile")
+
+	    	add_custom_target(NostraSocketWrapperDoc
+	    		ALL COMMAND DOXYGEN_COMMAND "doc/Doxyfile"
+	    		WORKING_DIRECTORY "."
+	    		COMMENT "Generating Doxygen documentation."
+	    		VERBATIM)
+
+	    	install(DIRECTORY "${OUT_DIR}/doc/html/"
+	    		DESTINATION
+	    			"doc"
+	    		COMPONENT
+	    			"Documentation")
+
+        else()
+    endif()
+endmacro()
