@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
+option(NOSTRA_BUILD_EXAMPLES "If enabled, the examples of all Nostra projects will be build." ON)
+
 #[[
 Parameters:
     - OUT    The variable that the output list will be stored in
@@ -293,66 +295,68 @@ endfunction()
 # will have been copied to.
 #]]
 function(nostra_add_c_test TEST_NAME)
-    cmake_parse_arguments(FUNC "TEST_CPP" "" "" "${ARGN}")
+    if(BUILD_TESTING)
+        cmake_parse_arguments(FUNC "TEST_CPP" "" "" "${ARGN}")
 
-    _nostra_add_test_helper("${TEST_NAME}" "c" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${FUNC_UNPARSED_ARGUMENTS}")
+        _nostra_add_test_helper("${TEST_NAME}" "c" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${FUNC_UNPARSED_ARGUMENTS}")
 
-    if(FUNC_TEST_CPP)
-        # Re-Build TEST_DIR from scratch, but change <prefix>.c.<name>.d to <prefix>.c.cpp.<name>.d
-        set(CPP_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.${TEST_NAME}.d")
+        if(FUNC_TEST_CPP)
+            # Re-Build TEST_DIR from scratch, but change <prefix>.c.<name>.d to <prefix>.c.cpp.<name>.d
+            set(CPP_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.${TEST_NAME}.d")
 
-        #=============================
-        # Copy the source dir of the test into the build dir
-        # 
-        # Copy the test dir into build/test/cpp
-        # 
-        # Such a tree:
-        # test
-        # └── ntp.c.component.wt.d
-        #     ├── resources
-        #     │   └── resource.txt
-        #     └── src
-        #         ├── component.wt.c
-        #         └── source.c
-        # 
-        # would result in:
-        # build
-        # └── test
-        #     └── cpp
-        #         └── test
-        #             └── ntp.c.cpp.component.wt.d
-        #                 ├── resources
-        #                 │   └── resource.txt
-        #                 └── src
-        #                     ├── component.wt.c.cpp
-        #                     └── source.c.cpp
-        # 
-        # The entire tree is nested into the additional test dir (build/test/cpp/test)
-        # because _nostra_add_test_helper() does expect it there                 ^^^^
-        # =============================
-        # Copy sources
-        _nostra_copy_source_tree_to_cpp("${TEST_NAME}" 
-            "${DIR_NAME}" 
-            "${CPP_TEST_DIR}" 
-            "${FUNC_ADDITIONAL_SOURCES}" 
-            "ADDITIONAL_SOURCES_CPP")
+            #=============================
+            # Copy the source dir of the test into the build dir
+            # 
+            # Copy the test dir into build/test/cpp
+            # 
+            # Such a tree:
+            # test
+            # └── ntp.c.component.wt.d
+            #     ├── resources
+            #     │   └── resource.txt
+            #     └── src
+            #         ├── component.wt.c
+            #         └── source.c
+            # 
+            # would result in:
+            # build
+            # └── test
+            #     └── cpp
+            #         └── test
+            #             └── ntp.c.cpp.component.wt.d
+            #                 ├── resources
+            #                 │   └── resource.txt
+            #                 └── src
+            #                     ├── component.wt.c.cpp
+            #                     └── source.c.cpp
+            # 
+            # The entire tree is nested into the additional test dir (build/test/cpp/test)
+            # because _nostra_add_test_helper() does expect it there                 ^^^^
+            # =============================
+            # Copy sources
+            _nostra_copy_source_tree_to_cpp("${TEST_NAME}" 
+                "${DIR_NAME}" 
+                "${CPP_TEST_DIR}" 
+                "${FUNC_ADDITIONAL_SOURCES}" 
+                "ADDITIONAL_SOURCES_CPP")
 
-        # Copy resources
-        _nostra_print_debug("Copy resources for C++ from: ${DIR_NAME}/resources")
-        _nostra_print_debug("Copy resources for C++ to:   ${CPP_TEST_DIR}")
-        _nostra_copy_resources_dir("${DIR_NAME}/resources" "${CPP_TEST_DIR}")
-        #=============================
+            # Copy resources
+            _nostra_print_debug("Copy resources for C++ from: ${DIR_NAME}/resources")
+            _nostra_print_debug("Copy resources for C++ to:   ${CPP_TEST_DIR}")
+            _nostra_copy_resources_dir("${DIR_NAME}/resources" "${CPP_TEST_DIR}")
+            #=============================
 
-        # Add the actual C++ test
-        _nostra_add_test_helper("${TEST_NAME}"         # Test name is still the same, but the language has changed
-                "c.cpp"                                # Language (c.cpp to distingush from regular c/cpp tests)
-                "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Input dir is the directory that the files were copied into
-                "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Output dir is this aswell
-            TEST_TARGET
-                "${FUNC_TEST_TARGET}"                  # The test target is still the same
-            ADDITIONAL_SOURCES
-                "${ADDITIONAL_SOURCES_CPP}"            # Processed file list, with .cpp added as extension
-            NOCOPY)                                    # The files were already copied, no need to copy again
+            # Add the actual C++ test
+            _nostra_add_test_helper("${TEST_NAME}"         # Test name is still the same, but the language has changed
+                    "c.cpp"                                # Language (c.cpp to distingush from regular c/cpp tests)
+                    "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Input dir is the directory that the files were copied into
+                    "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Output dir is this aswell
+                TEST_TARGET
+                    "${FUNC_TEST_TARGET}"                  # The test target is still the same
+                ADDITIONAL_SOURCES
+                    "${ADDITIONAL_SOURCES_CPP}"            # Processed file list, with .cpp added as extension
+                NOCOPY)                                    # The files were already copied, no need to copy again
+        endif()
     endif()
 endfunction()
 
@@ -382,7 +386,9 @@ endfunction()
 #]] 
 # TODO update the entire doc of test related functions
 function(nostra_add_cpp_test TEST_NAME)
-	_nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${ARGN}")
+    if(BUILD_TESTING)
+        _nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${ARGN}")
+    endif()
 endfunction()
 
 #[[
@@ -501,7 +507,9 @@ endfunction()
 # The same as nostra_add_cpp_compile_test() but a C compiler will be used to compile the target.
 #]]
 function(nostra_add_c_compile_test TEST_NAME)
-    _nostra_add_compile_test_helper("${TEST_NAME}" "c" ${ARGN})    
+    if(BUILD_TESTING)
+        _nostra_add_compile_test_helper("${TEST_NAME}" "c" ${ARGN})    
+    endif()
 endfunction()
 
 #[[
@@ -519,7 +527,9 @@ endfunction()
 # This function can only be called, if nostra_project() was called first.
 #]]
 function(nostra_add_cpp_compile_test TEST_NAME)
-    _nostra_add_compile_test_helper("${TEST_NAME}" "cpp" ${ARGN})    
+    if(BUILD_TESTING)
+        _nostra_add_compile_test_helper("${TEST_NAME}" "cpp" ${ARGN})     
+    endif() 
 endfunction()
 
 #[[
@@ -867,9 +877,13 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
 endfunction()
 
 function(nostra_add_c_example EXAMPLE_NAME)
-    _nostra_add_example_helper(EXAMPLE_NAME "c" ${ARGN})
+    if(NOSTRA_BUILD_EXAMPLES)
+        _nostra_add_example_helper(EXAMPLE_NAME "c" ${ARGN})
+    endif()
 endfunction()
 
 function(nostra_add_cpp_example EXAMPLE_NAME)
-    _nostra_add_example_helper(EXAMPLE_NAME "cpp" ${ARGN})
+    if(NOSTRA_BUILD_EXAMPLES)
+        _nostra_add_example_helper(EXAMPLE_NAME "cpp" ${ARGN})
+    endif()
 endfunction()
