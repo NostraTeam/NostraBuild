@@ -836,6 +836,14 @@ function(nostra_generate_doc)
 endfunction()
 
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
+
+    cmake_parse_arguments(FUNC_ "" "EXAMPLE_TARGET" "" ${ARGN})
+
+    if(NOT DEFINED FUNC_EXAMPLE_TARGET)
+        message(SEND_ERROR "parameter EXAMPLE_TARGET is required")
+    endif()
+
+    _nostra_check_parameters()
     _nostra_check_if_nostra_project()
 
     if(${LANGUAGE} STREQUAL "c")
@@ -850,18 +858,18 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
 
     add_executable("${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.${LANGUAGE}")
 
-    target_link_libraries("${EXAMPLE_NAME}" Nostra::SocketWrapper)
+    target_link_libraries("${EXAMPLE_NAME}" "${FUNC_EXAMPLE_TARGET}")
 
-    install(TARGETS "${EXAMPLE_NAME}" EXPORT ${PROJECT_EXPORT}
+    install(TARGETS "${EXAMPLE_NAME}" EXPORT "${PROJECT_EXPORT}"
         RUNTIME 
             DESTINATION "examples"
             COMPONENT "Examples")
 endfunction()
 
 function(nostra_add_c_example EXAMPLE_NAME)
-    _nostra_add_example_helper(EXAMPLE_NAME "c")
+    _nostra_add_example_helper(EXAMPLE_NAME "c" ${ARGN})
 endfunction()
 
 function(nostra_add_cpp_example EXAMPLE_NAME)
-    _nostra_add_example_helper(EXAMPLE_NAME "cpp")
+    _nostra_add_example_helper(EXAMPLE_NAME "cpp" ${ARGN})
 endfunction()
