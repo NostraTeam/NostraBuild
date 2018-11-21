@@ -36,6 +36,7 @@ endif()
 # Make sure the working directories exists for the next tests
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject/build")
+file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_nofail/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
@@ -65,6 +66,14 @@ add_test(
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject/build")
 
+add_test(
+    NAME
+        "ncm.cmake.nostra_add_compile_test.wt"
+    COMMAND 
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND} --output-on-failure"
+    WORKING_DIRECTORY
+        "${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject/build")
+        
 add_test(
     NAME
         "ncm.cmake.general_function_tests_nofail"

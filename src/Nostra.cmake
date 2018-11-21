@@ -71,6 +71,7 @@ endmacro()
 #   - VERSION [optional]:     The current version of the project - see project() for mor information
 #   - DESCRIPTION [optional]: The description of the project - see project() for mor information
 #   - LANGUAGES [optional]:   The language(s) that are enabled for the project  - see project() for mor information
+#   - LOGO [optional]:        The path to the logo of the project (as image file).
 # Similar to CMake's project() command, but with some extra Nostra-related stuff.
 #
 # Aside from creating a regular CMake project, this function defines:
@@ -81,9 +82,8 @@ endmacro()
 #
 # These variables are used by other functions in this module.
 #]]
-# TODO: add LOGO
 macro(nostra_project NAME PREFIX)
-    cmake_parse_arguments(NOSTRA_CMAKE "" "VERSION;DESCRIPTION" "LANGUAGES" "${ARGN}")
+    cmake_parse_arguments(NOSTRA_CMAKE "" "VERSION;DESCRIPTION;LOGO" "LANGUAGES" "${ARGN}")
 
     _nostra_check_parameters()
 
@@ -112,6 +112,10 @@ macro(nostra_project NAME PREFIX)
     # Export target name
     set("${NAME}_EXPORT" "${NAME}Targets")
     set("PROJECT_EXPORT" "${NAME}Targets")
+    
+    # Logo
+    set("${NAME}_LOGO" "${NOSTRA_CMAKE_LOGO}")
+    set("PROJECT_LOGO" "${NOSTRA_CMAKE_LOGO}")
 endmacro()
 
 #[[
@@ -132,18 +136,17 @@ macro(_nostra_check_if_nostra_project)
     endif()
 endmacro()
 
-
 #[[
 # Parameters:
 #   - TEST_NAME:                     The name of the test. Usually something like: component.wt 
 #   - LANGUAGE:                      The language of the test. Determines the names of files/directories and file
 #                                    extensions of the source files.
+#   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
 #   - IN_DIR:                        The directory that the test is nested in (e.g. CMAKE_SOURCE_DIR).
 #   - OUT_DIR:                       The directory that the testfiles will be copied to if not NOCOPY 
 #                                    (e.g. CMAKE_CURRENT_BINARY_DIR).
 #   - NOCOPY [optional]:             If TRUE, the resources will not be copied and the working directory is somewhere 
 #                                    in a child directory of IN_DIR.
-#   - TEST_TARGET [optional]:        The target to test, i.e. to link against. 
 #   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
 # 
 # A helper to add tests.
@@ -157,6 +160,7 @@ endmacro()
 # - Add the excutable as test (using add_test()). The working directory of that test will either be 
 #   IN_DIR/test/<test directory> or OUT_DIR/test/<test directory>, depending on NOCOPY being TRUE or FALSE.
 #]]
+# TODO: Fix test names
 macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
     cmake_parse_arguments(FUNC "NOCOPY" "TEST_TARGET" "ADDITIONAL_SOURCES" "${ARGN}")
 
@@ -166,6 +170,8 @@ macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
 
     # Check if PROJECT_PREFIX is defined
     _nostra_check_if_nostra_project()
+
+    _nostra_check_if_lib(${FUNC_TEST_TARGET})
 
     # Check that there are no additional arguments
     _nostra_check_parameters()
@@ -373,9 +379,139 @@ endfunction()
 # The tests will have the name <project prefix>.cpp.<test name>.
 #
 # This function can only be called, if nostra_project() was called first.
-#]]
+#]] 
+# TODO update the entire doc of test related functions
 function(nostra_add_cpp_test TEST_NAME)
 	_nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${ARGN}")
+endfunction()
+
+#[[
+# Parameters:
+#   - TEST_NAME: The name of the test.
+#   - LANGUAGE:                      Either c or cpp, determines parts of the name of the test.
+#   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
+#   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+#
+# A helper for nostra_add_c_compile_test() and nostra_add_cpp_compile_test().
+#
+# A function that creates unit tests that, instead of running an executable, will attempt to compile a program. If that
+# compilation succeeds (or fails if SHOULD_FAIL is set), the test will be successful.
+#
+# This function can only be called, if nostra_project() was called first.
+#]]
+# TODO: right now, TEST_NAME contains the component name, the type (wt/bt) and number. this should be split up
+# TODO: Add support for multiple, additional targets
+# TODO: Add required resource files for tests
+# TODO: add comment that CTest needs to be included and enable_testing() needs to have been called
+function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
+    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
+    
+    if(NOT DEFINED FUNC_TEST_TARGET)
+        message(SEND_ERROR "parameter TEST_TARGET is required")
+    endif()
+
+    _nostra_check_parameters()
+    _nostra_check_if_lib(${FUNC_TEST_TARGET})
+    _nostra_check_if_nostra_project()
+
+    if(FUNC_SHOULD_FAIL)
+        set(SUCCESS_REQUIREMENT "f")
+    else()
+        set(SUCCESS_REQUIREMENT "s")
+    endif()
+
+    # The name of the test executable
+    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.bu.${SUCCESS_REQUIREMENT}.${TEST_NAME}")
+    set(DIR_NAME "test/${TARGET_NAME}.d")
+    set(IN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    _nostra_print_debug("============================")
+    _nostra_print_debug("Creating new test")
+    _nostra_print_debug_value(TARGET_NAME)
+    _nostra_print_debug_value(DIR_NAME)
+    _nostra_print_debug_value(FUNC_TEST_TARGET)
+    _nostra_print_debug_value(FUNC_ADDITIONAL_SOURCES)
+    _nostra_print_debug_value(LANGUAGE)
+
+    # Properly prefix the additional source files to locate them in test/<test name>.d/src/
+    nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${IN_DIR}/${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
+
+    _nostra_print_debug_value(FUNC_ACTUAL_ADD_SOURCES)
+    _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}")
+
+    # Set language of the default source file
+    set_source_files_properties("${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${LANGUAGE}")
+
+    # Set language of the additional source files
+    foreach(F IN LISTS FUNC_ACTUAL_ADD_SOURCES)
+        set_source_files_properties("${F}" PROPERTIES LANGUAGE "${LANGUAGE}")
+    endforeach()
+
+    # Use library because that way, no main() is needed
+    add_library("${TARGET_NAME}" 
+        STATIC 
+        EXCLUDE_FROM_ALL # should not be build with the other targets, instead this is build during CTest
+        "${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" # default source file
+        "${FUNC_ACTUAL_ADD_SOURCES}")
+
+    target_link_libraries("${TARGET_NAME}" 
+        PRIVATE
+            "${FUNC_TEST_TARGET}")
+
+    #[[ Do not install for now
+    install(TARGETS "${TARGET_NAME}" EXPORT "${PROJECT_EXPORT}"
+        RUNTIME 
+            DESTINATION "${DIR_NAME}"
+            COMPONENT "Test")
+
+    # Install ressources folder from the SOURCES directory (if it exists)
+    if(EXISTS "${IN_DIR}/${DIR_NAME}/resources")
+        install(DIRECTORY "${IN_DIR}/${DIR_NAME}/resources" 
+            DESTINATION
+                "${DIR_NAME}"
+            COMPONENT 
+                "Test")
+    endif()
+    #]]
+
+    # Add the actual test to CTest
+    add_test(
+        NAME 
+            "${TARGET_NAME}"
+        COMMAND 
+            # In this case, this must be CMAKE_BINARY_DIR instead of CMAKE_CURRENT_BINARY_DIR
+            "${CMAKE_COMMAND}" "--build" "${CMAKE_BINARY_DIR}" "--target" "${TARGET_NAME}")
+
+    if(FUNC_SHOULD_FAIL)
+        set_tests_properties("${TARGET_NAME}" PROPERTIES WILL_FAIL "ON")
+    endif()
+endfunction()
+
+#[[
+# The same as nostra_add_cpp_compile_test() but a C compiler will be used to compile the target.
+#]]
+function(nostra_add_c_compile_test TEST_NAME)
+    _nostra_add_compile_test_helper("${TEST_NAME}" "c" ${ARGN})    
+endfunction()
+
+#[[
+# Parameters:
+#   - TEST_NAME:                     The name of the test.
+#   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
+#   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+#
+# A function that creates unit tests that, instead of running an executable, will attempt to compile a target. If that
+# compilation succeeds (or fails if SHOULD_FAIL is set), the test will be successful.
+#
+# For all source files of this project, independently of their actual file extension, a C++ compiler will be used.
+#
+# This function can only be called, if nostra_project() was called first.
+#]]
+function(nostra_add_cpp_compile_test TEST_NAME)
+    _nostra_add_compile_test_helper("${TEST_NAME}" "cpp" ${ARGN})    
 endfunction()
 
 #[[
@@ -621,7 +757,7 @@ function(nostra_generate_doc)
     # - NOSTRA_CMAKE_BUILTIN_STL_SUPPORT
     # - NOSTRA_CMAKE_HAVE_DOT
     # - NOSTRA_CMAKE_DOT_PATH
-    #]]    
+    #]]
 
     cmake_parse_arguments(FUNC_ "" "OUT_DIR" "" ${ARGN})
 
