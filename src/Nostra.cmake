@@ -441,12 +441,20 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
     _nostra_print_debug_value(FUNC_ACTUAL_ADD_SOURCES)
     _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}")
 
+    if("${LANGUAGE}" STREQUAL "c")
+        set(UPPER_LANG "C")
+    elseif("${LANGUAGE}" STREQUAL "cpp")
+        set(UPPER_LANG "CXX")
+    else()
+        message(SEND_ERROR "Invalid language ${LANGUAGE}")
+    endif()
+
     # Set language of the default source file
-    set_source_files_properties("${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${LANGUAGE}")
+    set_source_files_properties("${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
 
     # Set language of the additional source files
     foreach(F IN LISTS FUNC_ACTUAL_ADD_SOURCES)
-        set_source_files_properties("${F}" PROPERTIES LANGUAGE "${LANGUAGE}")
+        set_source_files_properties("${F}" PROPERTIES LANGUAGE "${UPPER_LANG}")
     endforeach()
 
     # Use library because that way, no main() is needed
@@ -825,4 +833,35 @@ function(nostra_generate_doc)
             nostra_message("Doxygen executable could not be found, documentation generation will be omitted.")
         endif()
     endif()
+endfunction()
+
+function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
+    _nostra_check_if_nostra_project()
+
+    if(${LANGUAGE} STREQUAL "c")
+        set(UPPER_LANG "C")
+    elseif(${LANGUAGE} STREQUAL "cpp")
+        set(UPPER_LANG "CXX")
+    else()
+        message(SEND_ERROR "Invalid language ${LANGUAGE}")
+    endif()
+
+    set_source_files_properties("examples/${EXAMPLE_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+
+    add_executable("${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.${LANGUAGE}")
+
+    target_link_libraries("${EXAMPLE_NAME}" Nostra::SocketWrapper)
+
+    install(TARGETS "${EXAMPLE_NAME}" EXPORT ${PROJECT_EXPORT}
+        RUNTIME 
+            DESTINATION "examples"
+            COMPONENT "Examples")
+endfunction()
+
+function(nostra_add_c_example EXAMPLE_NAME)
+    _nostra_add_example_helper(EXAMPLE_NAME "c")
+endfunction()
+
+function(nostra_add_cpp_example EXAMPLE_NAME)
+    _nostra_add_example_helper(EXAMPLE_NAME "cpp")
 endfunction()
