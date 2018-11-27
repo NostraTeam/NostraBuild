@@ -140,6 +140,21 @@ endmacro()
 
 #[[
 # Parameters:
+#   - TARGET: The target to check.
+#
+# Checks if the passed target is a library (target property TYPE is SHARED_LIBRARY or STATIC_LIBRARY). If not, the
+# the function will trigger an error.
+#]]
+function(_nostra_check_if_lib TARGET)
+    get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
+
+    if(NOT "${NOSTRA_CMAKE_TARGET_TYPE}" MATCHES "(SHARED|STATIC)_LIBRARY")
+        message(SEND_ERROR "Target ${TARGET} is not a shared or static library.")
+    endif()
+endfunction()
+
+#[[
+# Parameters:
 #   - TEST_NAME:                     The name of the test. Usually something like: component.wt 
 #   - LANGUAGE:                      The language of the test. Determines the names of files/directories and file
 #                                    extensions of the source files.
@@ -548,21 +563,6 @@ endfunction()
 
 #[[
 # Parameters:
-#   - TARGET: The target to check.
-#
-# Checks if the passed target is a library (target property TYPE is SHARED_LIBRARY or STATIC_LIBRARY). If not, the
-# the function will trigger an error.
-#]]
-function(_nostra_check_if_lib TARGET)
-    get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
-
-    if(NOT "${NOSTRA_CMAKE_TARGET_TYPE}" MATCHES "(SHARED|STATIC)_LIBRARY")
-        message(SEND_ERROR "Target ${TARGET} is not a shared or static library.")
-    endif()
-endfunction()
-
-#[[
-# Parameters:
 #   - OUT_VAR: The name of the output variable.
 #   - TARGET:  The target to get the name of.
 #
@@ -576,6 +576,18 @@ function(nostra_alias_get_actual_name OUT_VAR TARGET)
         set("${OUT_VAR}" "${ALIAS_NAME}")
     else()
         set("${OUT_VAR}" "${TARGET}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(nostra_get_compiler_id OUT_VAR)
+    get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
+
+    if("CXX" IN_LIST ENABLED_LANGUAGES)
+        set("${OUT_VAR}" "${CMAKE_CXX_COMPILER_ID}" PARENT_SCOPE)
+    elseif("C" IN_LIST ENABLED_LANGUAGES) # If C is in the list but not CXX
+        set("${OUT_VAR}" "${CMAKE_C_COMPILER_ID}" PARENT_SCOPE)
+    else()
+        message(SEND_ERROR "Neither C nor C++ are enabled as languages.")
     endif()
 endfunction()
 
@@ -593,7 +605,7 @@ endfunction()
 #]]
 macro(nostra_alias_to_actual_name VAR)
     nostra_alias_get_actual_name(OUT_VAR ${${VAR}})
-    set("${VAR}" "${OUT_VAR}")
+    set("${VAR}" "${OUT_VAR}" PARENT_SCOPE)
 endmacro()
 
 # Get the directory of this file; this needs to be outside of a function
@@ -626,23 +638,35 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
                 "${NOSTRA_CMAKE_PREFIX}_IS_STATIC_LIB")
     endif()
 
-    if(WIN32)
+    nostra_get_compiler_id(NOSTRA_COMPILER_ID)
+
+    if("${NOSTRA_COMPILER_ID}" STREQUAL "MSVC")
         set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__declspec(dllexport)")
         set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__declspec(dllimport)")
         set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "") # no export is the default behavior on Windows
         set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__declspec(deprecated)")
-    elseif(APPLE OR UNIX)
+    elseif("${NOSTRA_COMPILER_ID}" STREQUAL "AppleClang")
+        set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "__attribute__((visibility(\"hidden\")))")
+        set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__attribute__((__deprecated__))")
+    elseif("${NOSTRA_COMPILER_ID}" STREQUAL "Clang")
+        set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
+        set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "__attribute__((visibility(\"hidden\")))")
+        set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__attribute__((__deprecated__))")
+    elseif("${NOSTRA_COMPILER_ID}" STREQUAL "GNU")
         set(NOSTRA_CMAKE_EXPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
         set(NOSTRA_CMAKE_IMPORT_ATTRIBUTE "__attribute__((visibility(\"default\")))")
         set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "__attribute__((visibility(\"hidden\")))")
         set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__attribute__((__deprecated__))")
     else()
-        message(SEND_ERROR "This operating system is not supported.")
+        message(SEND_ERROR "The compiler with the ID ${NOSTRA_COMPILER_ID} is not supported.")
     endif()
 
     # If OUT_DIR is undefined, explicitly define it. This is required b/c the next configure_file() command would put
     # the generated file into the root directory if OUT_DIR is empty/undefined.
-    if(NOT DEFINED "${OUT_DIR}")
+    if(NOT DEFINED OUT_DIR)
         set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
@@ -679,8 +703,9 @@ endfunction()
 # shared or static library.
 #]=]
 macro(nostra_generate_export_header TARGET)
-    cmake_parse_arguments(FUNC_ "" "OUTPUT_DIR" "" ${ARGN})
+    cmake_parse_arguments(FUNC "" "OUTPUT_DIR" "" ${ARGN})
 
+    _nostra_check_if_nostra_project()
     _nostra_check_parameters()
 
     # Put FUNC_OUTPUT_DIR into quotes to make sure an empty string gets passed if it is not defined
@@ -777,13 +802,13 @@ function(nostra_generate_doc)
     # - NOSTRA_CMAKE_DOT_PATH
     #]]
 
-    cmake_parse_arguments(FUNC_ "" "OUT_DIR" "" ${ARGN})
+    cmake_parse_arguments(FUNC "" "OUT_DIR" "" ${ARGN})
 
     _nostra_check_parameters()
     _nostra_check_if_nostra_project()
 
     if(NOT DEFINED FUNC_OUT_DIR)
-        set(FUNC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+        set(NOSTRA_CMAKE_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
     endif()
 
     # Add the option for the current project
@@ -829,7 +854,7 @@ function(nostra_generate_doc)
 	    	configure_file("doc/Doxyfile.in" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile")
 
 	    	add_custom_target(NostraSocketWrapperDoc
-	    		ALL COMMAND DOXYGEN_COMMAND "${OUTPUT_DIR}/Doxyfile"
+	    		ALL COMMAND "${DOXYGEN_COMMAND}" "${OUTPUT_DIR}/Doxyfile"
 	    		WORKING_DIRECTORY "."
 	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}."
 	    		VERBATIM)
@@ -847,7 +872,7 @@ endfunction()
 
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
 
-    cmake_parse_arguments(FUNC_ "" "EXAMPLE_TARGET" "" ${ARGN})
+    cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "" ${ARGN})
 
     if(NOT DEFINED FUNC_EXAMPLE_TARGET)
         message(SEND_ERROR "parameter EXAMPLE_TARGET is required")
@@ -887,3 +912,29 @@ function(nostra_add_cpp_example EXAMPLE_NAME)
         _nostra_add_example_helper(EXAMPLE_NAME "cpp" ${ARGN})
     endif()
 endfunction()
+
+function(nostra_add_library NAME)
+
+    _nostra_check_if_nostra_project()
+
+    option("${PROJECT_PREFIX}_BUILD_${NAME}_SHARED" "If enabled, the library ${NAME} will be build as shared library.")
+
+    if(${PROJECT_PREFIX}_BUILD_${NAME}_SHARED)
+        add_library(${NAME} SHARED ${ARGN})
+    else()
+        add_library(${NAME} STATIC ${ARGN})
+    endif()
+endfunction()
+
+function(nostra_get_compiler_id OUT_VAR)
+    get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
+
+    if("CXX" IN_LIST ENABLED_LANGUAGES)
+        set("${OUT_VAR}" "${CMAKE_CXX_COMPILER_ID}" PARENT_SCOPE)
+    elseif("C" IN_LIST ENABLED_LANGUAGES) # If C is in the list but not CXX
+        set("${OUT_VAR}" "${CMAKE_C_COMPILER_ID}" PARENT_SCOPE)
+    else()
+        message(SEND_ERROR "Neither C nor C++ are enabled as languages.")
+    endif()
+endfunction()
+

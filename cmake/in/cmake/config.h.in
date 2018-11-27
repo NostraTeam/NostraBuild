@@ -1,0 +1,73 @@
+#ifndef @NOSTRA_CMAKE_PREFIX@_CONFIG_H
+#define @NOSTRA_CMAKE_PREFIX@_CONFIG_H
+
+/**
+\file config.h
+\author	 Lukas Reichmann
+\since   @NOSTRA_INITIAL_VERSION@
+\version @PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.@PROJECT_VERSION_TWEAK@
+\brief   This file will be configured by CMake and provides macros that inject CMake defined variables into 
+		 the source code of the project.
+*/
+
+/**
+\brief
+An integer constant that expands to the major part of the current version of the library.
+
+\note
+This constant should not be used by a user of the library, it is only made for internal usage.
+
+\author  Lukas Reichmann
+\version @PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.@PROJECT_VERSION_TWEAK@
+\since   @NOSTRA_INITIAL_VERSION@
+*/
+#ifndef @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_MAJOR
+#define @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#endif
+
+/**
+\brief
+An integer constant that expands to the minor part of the current version of the library.
+
+\note
+This constant should not be used by a user of the library, it is only made for internal usage.
+
+\author  Lukas Reichmann
+\version @PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.@PROJECT_VERSION_TWEAK@
+\since   @NOSTRA_INITIAL_VERSION@
+*/
+#ifndef @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_MINOR
+#define @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#endif
+
+/**
+\brief
+An integer constant that expands to the patch part of the current version of the library.
+
+\note
+This constant should not be used by a user of the library, it is only made for internal usage.
+
+\author  Lukas Reichmann
+\version @PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.@PROJECT_VERSION_TWEAK@
+\since   @NOSTRA_INITIAL_VERSION@
+*/
+#ifndef @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_PATCH
+#define @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#endif
+
+/**
+\brief
+An integer constant that expands to the tweak part of the current version of the library.
+
+\note
+This constant should not be used by a user of the library, it is only made for internal usage.
+
+\author  Lukas Reichmann
+\version @PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.@PROJECT_VERSION_TWEAK@
+\since   @NOSTRA_INITIAL_VERSION@
+*/
+#ifndef @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_TWEAK
+#define @NOSTRA_CMAKE_PREFIX@_INTERNAL_VERSION_TWEAK @PROJECT_VERSION_TWEAK@
+#endif
+
+#endif

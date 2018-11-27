@@ -1,0 +1,162 @@
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+
+#list(APPEND CMAKE_MODULE_PATH "~/.nostra/NostraCMake/src")
+list(APPEND CMAKE_MODULE_PATH "~/Documents/Repos/NostraCMake/src")
+
+include("Nostra" RESULT_VARIABLE FOUND_NOSTRA)
+
+if(NOT DEFINED FOUND_NOSTRA)
+    message("Nostra.cmake was not found at ${CMAKE_MODULE_PATH}.")
+endif()
+
+nostra_project("@NOSTRA_NAME_CAMEL@" "@NOSTRA_PREFIX_LOWER@"
+    VERSION     "@NOSTRA_INITIAL_VERSION@"
+    DESCRIPTION "@NOSTRA_DESCRIPTION@"
+    LANGUAGES   "@NOSTRA_LANGUAGES@"
+    @NOSTRA_LOGO_ACTUAL@)
+
+set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "") # Source files will be added here
+
+nostra_add_library(@NOSTRA_NAME@ ${@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES})
+add_library(Nostra::@NOSTRA_NAME@ ALIAS @NOSTRA_NAME@)
+
+configure_file("cmake/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/nostra/@NOSTRA_NAME_LOWER@/config.h")
+
+target_include_directories(@NOSTRA_NAME@
+	PUBLIC
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+		"$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>" # For additional, configured files
+		"$<INSTALL_INTERFACE:include>")
+
+nostra_get_compiler_id(NOSTRA_LANGUAGE_ID)
+
+if("${NOSTRA_LANGUAGE_ID}" STREQUAL "MSVC")
+    target_compile_options(@NOSTRA_NAME@
+        PRIVATE
+            "/wd4251")
+elseif("${NOSTRA_LANGUAGE_ID}" STREQUAL "AppleClang")
+    target_compile_options(@NOSTRA_NAME@
+        PRIVATE
+            "-Wall"
+            "-Wextra"
+            "-Wpedantic"
+            "-fPIC")
+elseif("${NOSTRA_LANGUAGE_ID}" STREQUAL "Clang")
+    target_compile_options(@NOSTRA_NAME@
+        PRIVATE
+            "-Wall"
+            "-Wextra"
+            "-Wpedantic"
+            "-fPIC")
+elseif("${NOSTRA_LANGUAGE_ID}" STREQUAL "GNU")
+    target_compile_options(@NOSTRA_NAME@
+        PRIVATE
+            "-Wall"
+            "-Wextra"
+            "-Wpedantic"
+            "-fPIC")
+else()
+    message(WARNING "The compiler with the ID ${NOSTRA_LANGUAGE_ID} may not be supported.")
+endif()
+  
+nostra_generate_export_header(@NOSTRA_NAME@ OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/nostra/@NOSTRA_NAME_LOWER@")
+
+install(TARGETS @NOSTRA_NAME@ EXPORT ${PROJECT_EXPORT}
+	RUNTIME 
+		DESTINATION "bin"
+		COMPONENT "Required"
+	LIBRARY 
+		DESTINATION "lib"
+		COMPONENT "Required"
+	ARCHIVE	
+		DESTINATION "lib/static"
+		COMPONENT "Develop"
+	INCLUDES 
+		DESTINATION "include")
+
+install(DIRECTORY "include" 
+	DESTINATION 
+		"."
+	COMPONENT
+		"Develop")
+		
+# Install the additionally configured file(s)
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include/" 
+	DESTINATION 
+		"include"
+	COMPONENT
+		"Develop")
+
+
+
+nostra_generate_doc()
+
+
+
+include(CTest)
+enable_testing()
+
+# Tests start
+
+# Tests end
+
+
+
+# Examples start
+
+# Examples end
+
+
+
+install(FILES "README.md" 
+	DESTINATION	
+		"." 
+	COMPONENT 
+		"Required")
+
+install(FILES "LICENSE.txt"
+	DESTINATION	
+		"." 
+	COMPONENT 
+		"Required")
+
+
+        
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/@NOSTRA_NAME_CAMEL@ConfigVersion.cmake"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY AnyNewerVersion)
+
+export(EXPORT ${PROJECT_EXPORT}
+    FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_EXPORT}.cmake"
+    NAMESPACE Nostra::)
+
+configure_file("cmake/@NOSTRA_NAME_CAMEL@Config.cmake.in" "@NOSTRA_NAME_CAMEL@Config.cmake" @ONLY)
+
+set(CONFIG_PACKAGE_LOCATION "lib/cmake/@NOSTRA_NAME_CAMEL@")
+
+install(EXPORT ${PROJECT_EXPORT}
+    FILE
+        "${PROJECT_EXPORT}.cmake"
+    NAMESPACE
+        Nostra::
+    DESTINATION
+        ${CONFIG_PACKAGE_LOCATION}
+    COMPONENT
+        "Required")
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/@NOSTRA_NAME_CAMEL@Config.cmake"
+  DESTINATION
+    ${CONFIG_PACKAGE_LOCATION}
+  COMPONENT
+    "Develop")
+
+configure_file("cmake/CPackConfig.cmake.in" "cmake/CPackConfig.cmake" @ONLY)
+
+include("${CMAKE_CURRENT_BINARY_DIR}/cmake/CPackConfig.cmake")
+
+include(CPack)
+        
