@@ -1,8 +1,4 @@
 
-
-message("START")
-
-
 set(NOSTRA_NAME "" CACHE STRING "The name of the project. Should be in upper camel case and without \"Nostra\" at the \
 beginning (e.g. Utils for NostraUtils).")
 set(NOSTRA_PREFIX "" CACHE STRING "The prefix of the project, e.g. nou for NostraUtils.")
@@ -24,8 +20,6 @@ string(TOLOWER "${NOSTRA_NAME}" NOSTRA_NAME_LOWER)
 
 string(TOUPPER "${NOSTRA_PREFIX}" NOSTRA_PREFIX_UPPER)
 string(TOLOWER "${NOSTRA_PREFIX}" NOSTRA_PREFIX_LOWER)
-
-message("READ VARS")
 
 if(NOT NOSTRA_LOGO STREQUAL "")
     set(NOSTRA_LOGO_ACTUAL "LOGO ${NOSTRA_LOGO}")
@@ -52,8 +46,6 @@ function(nostra_copy_file IN_FILE OUT_FILE)
     configure_file("${NOSTRA_IN_ROOT}/${IN_FILE}" "${NOSTRA_OUT_ROOT}/${OUT_FILE}" COPYONLY)
     message(STATUS "Copied file:\nFrom\n\t${NOSTRA_IN_ROOT}/${IN_FILE}\nto\n\t${NOSTRA_OUT_ROOT}/${OUT_FILE}")
 endfunction()
-
-message("DECLARED FUNCTIONS")
 
 if("${NOSTRA_NAME}" STREQUAL "")
     message(SEND_ERROR "NOSTRA_NAME must not be empty.")
