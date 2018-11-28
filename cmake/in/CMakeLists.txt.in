@@ -20,7 +20,9 @@ set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "") # Source files will be added
 nostra_add_library(@NOSTRA_NAME@ ${@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES})
 add_library(Nostra::@NOSTRA_NAME@ ALIAS @NOSTRA_NAME@)
 
-configure_file("cmake/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/nostra/@NOSTRA_NAME_LOWER@/config.h")
+if(@NOSTRA_HAVE_CONFIG_H@)
+    configure_file("cmake/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/nostra/@NOSTRA_NAME_LOWER@/config.h")
+endif()
 
 target_include_directories(@NOSTRA_NAME@
 	PUBLIC

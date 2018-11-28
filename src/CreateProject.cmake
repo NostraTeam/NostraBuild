@@ -15,6 +15,8 @@ set(NOSTRA_OUT_ROOT "." CACHE PATH "The root directory of the new project. All f
 set(NOSTRA_IN_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 set(NOSTRA_INITIAL_VERSION "1.0.0.0" CACHE STRING "The initial version of the project.")
 option(NOSTRA_HAVE_CLANG_FORMAT "If disabled, .clang-format will not be part of the new project tree." ON)
+option(NOSTRA_HAVE_CLANG_TIDY "If disabled, .clang-tidy will not be part of the new project tree." ON)
+option(NOSTRA_HAVE_CONFIG_H "If disabled, no config.h will be used by the new project." ON)
 
 set(NOSTRA_NAME_CAMEL "Nostra${NOSTRA_NAME}")
 string(TOUPPER "${NOSTRA_NAME}" NOSTRA_NAME_UPPER)
@@ -73,6 +75,8 @@ set(PROJECT_VERSION_TWEAK "@PROJECT_VERSION_TWEAK@")
 nostra_create_dir(".")
 nostra_create_dir("cmake")
 nostra_create_dir("doc")
+nostra_create_dir("doc/img")
+nostra_create_dir("doc/dot")
 nostra_create_dir("examples")
 nostra_create_dir("include")
 nostra_create_dir("include/nostra")
@@ -83,6 +87,9 @@ nostra_create_dir("test")
 # Root directory files
 if(NOSTRA_HAVE_CLANG_FORMAT)
     nostra_configure_file("cmake/in/.clang-format.in" ".clang-format")
+endif()
+if(NOSTRA_HAVE_CLANG_TIDY)
+    nostra_configure_file("cmake/in/.clang-tidy.in" ".clang-tidy")
 endif()
 nostra_configure_file("cmake/in/.gitattributes.in" ".gitattributes")
 nostra_configure_file("cmake/in/.gitignore.in" ".gitignore")
@@ -95,7 +102,9 @@ nostra_copy_file("cmake/in/cmake/CPackConfig.cmake.in" "cmake/CPackConfig.cmake.
 nostra_configure_file("cmake/in/cmake/welcome.txt.in" "cmake/welcome.txt")
 nostra_configure_file("cmake/in/cmake/Targets.cmake.in" "cmake/${NOSTRA_NAME_CAMEL}Targets.cmake")
 nostra_copy_file("cmake/in/cmake/Config.cmake.in" "cmake/${NOSTRA_NAME_CAMEL}Config.cmake.in")
-nostra_configure_file("cmake/in/cmake/config.h.in" "cmake/config.h.in")
+if(NOSTRA_HAVE_CONFIG_H)
+    nostra_configure_file("cmake/in/cmake/config.h.in" "cmake/config.h.in")
+endif()
 
 # doc files
 nostra_copy_file("cmake/in/doc/Doxyfile.in" "doc/Doxyfile.in") # Copy, variable expansion is done by the project itself
@@ -103,4 +112,4 @@ nostra_configure_file("cmake/in/doc/additional_doc.dox.in" "doc/additional_doc.d
 nostra_configure_file("cmake/in/doc/style.css.in" "doc/style.css")
 nostra_configure_file("cmake/in/doc/DoxygenLayout.xml.in" "doc/DoxygenLayout.xml")
 
-message("Success!")
+message("The project has successfully been created.")
