@@ -116,8 +116,13 @@ macro(nostra_project NAME PREFIX)
     set("PROJECT_EXPORT" "${NAME}Targets")
     
     # Logo
-    set("${NAME}_LOGO" "${NOSTRA_CMAKE_LOGO}")
-    set("PROJECT_LOGO" "${NOSTRA_CMAKE_LOGO}")
+    if(DEFINED NOSTRA_CMAKE_LOGO)
+        set("${NAME}_LOGO" "doc/img/${NOSTRA_CMAKE_LOGO}")
+        set("PROJECT_LOGO" "doc/img/${NOSTRA_CMAKE_LOGO}")
+    else()
+        set("${NAME}_LOGO" "")
+        set("PROJECT_LOGO" "")
+    endif()
 endmacro()
 
 #[[
