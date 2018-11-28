@@ -935,6 +935,10 @@ function(nostra_add_library NAME)
     else()
         add_library(${NAME} STATIC ${ARGN})
     endif()
+
+    target_compile_definitions(${NAME} 
+        INTERFACE
+            "NOSTRA_HAS_${PROJECT_PREFIX}")
 endfunction()
 
 function(nostra_get_compiler_id OUT_VAR)
