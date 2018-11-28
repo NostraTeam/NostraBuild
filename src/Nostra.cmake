@@ -608,10 +608,10 @@ endfunction()
 # nostra_alias_to_actual_name(MY_TARGET) # Important: do not expand MY_TARGET
 # # Now, MY_TARGET stores the name of the actual of the target, even if it was an alias name before
 #]]
-macro(nostra_alias_to_actual_name VAR)
+function(nostra_alias_to_actual_name VAR)
     nostra_alias_get_actual_name(OUT_VAR ${${VAR}})
     set("${VAR}" "${OUT_VAR}" PARENT_SCOPE)
-endmacro()
+endfunction()
 
 # Get the directory of this file; this needs to be outside of a function
 set(_NOSTRA_CMAKE_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
@@ -729,7 +729,7 @@ endmacro()
 function(nostra_message STR)
     _nostra_check_if_nostra_project()
 
-    message(STATUS "${PROJECT_NAME}: ${MESSAGE}")
+    message(STATUS "${PROJECT_NAME}: ${STR}")
 endfunction()
 
 #[[
