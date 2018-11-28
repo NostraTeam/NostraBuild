@@ -877,7 +877,7 @@ endfunction()
 
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
 
-    cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "" ${ARGN})
+    cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
 
     if(NOT DEFINED FUNC_EXAMPLE_TARGET)
         message(SEND_ERROR "parameter EXAMPLE_TARGET is required")
@@ -894,9 +894,15 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
         message(SEND_ERROR "Invalid language ${LANGUAGE}")
     endif()
 
-    set_source_files_properties("examples/${EXAMPLE_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+    set_source_files_properties("examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
 
-    add_executable("${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.${LANGUAGE}")
+    nostra_prefix_list(FUNC_ADDITIONAL_SOURCES "examples/${EXAMPLE_NAME}.d/")
+
+    foreach(SRC IN LISTS FUNC_ADDITIONAL_SOURCES)
+        set_source_files_properties("${SRC}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+    endforeach()
+
+    add_executable("${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" "${FUNC_ADDITIONAL_SOURCES}")
 
     target_link_libraries("${EXAMPLE_NAME}" "${FUNC_EXAMPLE_TARGET}")
 
