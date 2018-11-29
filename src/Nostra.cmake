@@ -2,13 +2,11 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 option(NOSTRA_BUILD_EXAMPLES "If enabled, the examples of all Nostra projects will be build." ON)
 
-# TODO: add cmake_parse_arguments() and _nostra_check_parameters() to all functions
-
 #[[
-Checks if FUNC_UNPARSED_ARGUMENTS is defined and triggers an error if it is not.
-
-This can be used to check if there were unexpected arguments passed to function or macro.
-Usually, this used with and used after cmake_parse_arguments().
+# Checks if FUNC_UNPARSED_ARGUMENTS is defined and triggers an error if it is not.
+# 
+# This can be used to check if there were unexpected arguments passed to function or macro.
+# Usually, this used with and used after cmake_parse_arguments().
 #]]
 macro(_nostra_check_parameters)
     if(DEFINED FUNC_UNPARSED_ARGUMENTS)
@@ -17,9 +15,9 @@ macro(_nostra_check_parameters)
 endmacro()
 
 #[[
-Makes sure that ARGN has a size of 0. If that is not the case, an error will be triggered.
-
-This function can not be used when cmake_parse_arguments() is used in the same function.
+# Makes sure that ARGN has a size of 0. If that is not the case, an error will be triggered.
+# 
+# This function can not be used when cmake_parse_arguments() is used in the same function.
 #]]
 function(_nostra_check_no_parameters)
     if(ARGC GREATER 0)
@@ -28,14 +26,14 @@ function(_nostra_check_no_parameters)
 endfunction()
 
 #[[
-Parameters:
-    - OUT    The variable that the output list will be stored in
-    - PREFIX The prefix to add
-
-Adds a prefix to all elements in a list.
-
-E.g.:
-The list "one;two;three" and the prefix "prefix_" would result in the list "prefix_one;prefix_two;prefix_three".
+# Parameters:
+#     - OUT    The variable that the output list will be stored in
+#     - PREFIX The prefix to add
+# 
+# Adds a prefix to all elements in a list.
+# 
+# E.g.:
+# The list "one;two;three" and the prefix "prefix_" would result in the list "prefix_one;prefix_two;prefix_three".
 #]]
 function(nostra_prefix_list OUT PREFIX)
     _nostra_check_no_parameters()
@@ -49,15 +47,14 @@ function(nostra_prefix_list OUT PREFIX)
 endfunction()
 
 #[[
-Parameters:
-    - OUT    The variable that the output list will be stored in
-    - SUFFIX The suffix to add
-
-Adds a suffix to all elements in a list.
-
-E.g.:
-The list "one;two;three" and the suffix "suffix_" would result in the list "one_suffix;two_suffix;three_suffix".
-""
+# Parameters:
+#     - OUT:    The variable that the output list will be stored in
+#     - SUFFIX: The suffix to add
+# 
+# Adds a suffix to all elements in a list.
+# 
+# E.g.:
+# The list "one;two;three" and the suffix "suffix_" would result in the list "one_suffix;two_suffix;three_suffix".
 #]]
 function(nostra_suffix_list OUT SUFFIX)
     _nostra_check_no_parameters()
@@ -70,6 +67,12 @@ function(nostra_suffix_list OUT SUFFIX)
 	set("${OUT}" "${LIST_INTERNAL}" PARENT_SCOPE)
 endfunction()
 
+#[[
+# Parameters:
+#     - NOSTRA_CMAKE_STR: The string to print.
+# 
+# Prints the passed variable, but only if NOSTRA_CMAKE_DEBUG is set to TRUE.
+#]]
 macro(_nostra_print_debug NOSTRA_CMAKE_STR)
     _nostra_check_no_parameters()
     if(NOSTRA_CMAKE_DEBUG)
@@ -77,6 +80,12 @@ macro(_nostra_print_debug NOSTRA_CMAKE_STR)
     endif()
 endmacro()
 
+#[[
+# Parameters:
+#     - NOSTRA_CMAKE_VARNAME: The name of the variable to print.
+# 
+# Prints the passed variable using _nostra_print_debug() in the format <name of the variable>=<value of the variable>.
+#]]
 macro(_nostra_print_debug_value NOSTRA_CMAKE_VARNAME)
     _nostra_check_no_parameters()
     _nostra_print_debug("${NOSTRA_CMAKE_VARNAME}=${${NOSTRA_CMAKE_VARNAME}}")
@@ -415,7 +424,7 @@ endfunction()
 #                                                     test has.
 # 
 # A function that creates unit tests for C++ to test a single target (that target is passed using TEST_TARGET). 
-# The tests need to be in the standard layout after Nostra convention.
+# The tests need to be in the standard layout as defined by the Nostra convention.
 # 
 # Unless the flag NOCOPY has been passed, the files from test/<test name>/resources will be copied into the build
 # directory and the test executable will be executed in that directory.
@@ -606,6 +615,14 @@ function(nostra_alias_get_actual_name OUT_VAR TARGET)
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#     - OUT_VAR: The variable that the compiler ID will be stored in.
+# 
+# Obtains the compiler ID of the current compiler. If CXX (and possbile C) are enabled as languages, the ID of the CXX 
+# compiler will be used, if only C is enabled, the ID of that compiler will be used. If neither C nor CXX are enabled,
+# an error will be triggered.
+#]]
 function(nostra_get_compiler_id OUT_VAR)
     _nostra_check_no_parameters()
 
@@ -912,6 +929,22 @@ function(nostra_generate_doc)
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#   - EXAMPLE_NAME:                  The name of the example.
+#   - LANGUAGE:                      The language of the test. Determines the names of files/directories and file
+#                                    extensions of the source files. This is either "c" or "cpp".
+#   - EXAMPLE_TARGET:                The target that the example is for, i.e. the target to link against. 
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+# 
+# A helper to add examples.
+# This helper will:
+# - Add an executable with the following source files (the file names are relative to 
+#   /test/examples/<example name>.ex.d):
+#   - <example name>.ex.<language> (e.g. component.ex.cpp) (called: default source file, this file must always exist)
+#   - Any files listed in ADDITIONAL_SOURCES
+# - Install that executable into the export target of the current project.
+#]]
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
     cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
 
@@ -950,18 +983,69 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
             COMPONENT "Examples")
 endfunction()
 
+#[[
+# Parameters:
+#   - EXAMPLE_NAME:                  The name of the test. According to the Nostra convetion, this is the component 
+#                                    name that the example is for (or another fitting name if the example is not for a 
+#                                    single component).
+#   - EXAMPLE_TARGET:                The target that the example is for, i.e. the target to link against. 
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+# 
+# A function that creates examples int C for single target (that target is passed using TEST_TARGET). 
+# The tests need to be in the standard layout as defined by the Nostra convention.
+# 
+# The examples will have the name <project prefix>.c.<example name>.ex.
+#
+# Note that, even if the provided source files have the extension .cpp (or any other extension), the files will be
+# compiled as C code.
+#
+# This function can only be called, if nostra_project() was called first.
+#]] 
 function(nostra_add_c_example EXAMPLE_NAME)
     if(NOSTRA_BUILD_EXAMPLES)
         _nostra_add_example_helper(EXAMPLE_NAME "c" ${ARGN})
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#   - EXAMPLE_NAME:                  The name of the test. According to the Nostra convetion, this is the component 
+#                                    name that the example is for (or another fitting name if the example is not for a 
+#                                    single component).
+#   - EXAMPLE_TARGET:                The target that the example is for, i.e. the target to link against. 
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+# 
+# A function that creates examples int C++ for single target (that target is passed using TEST_TARGET). 
+# The tests need to be in the standard layout as defined by the Nostra convention.
+# 
+# The examples will have the name <project prefix>.cpp.<example name>.ex.
+#
+# Note that, even if the provided source files have the extension .c (or any other extension), the files will be
+# compiled as C++ code.
+#
+# This function can only be called, if nostra_project() was called first.
+#]] 
 function(nostra_add_cpp_example EXAMPLE_NAME)
     if(NOSTRA_BUILD_EXAMPLES)
         _nostra_add_example_helper(EXAMPLE_NAME "cpp" ${ARGN})
     endif()
 endfunction()
 
+#[[
+# Parameters:
+#     - NAME:  The name of the library that will be added.
+#     - <any>: Any additional parameters, these will be redirected to add_library().
+# 
+# Similar to add_library(), but it does a few additional things:
+#     - It adds an option to build that specific library as shared or static library (the option is called 
+#       <project prefix>_BUILD_<library name>_SHARED). If the option is FALSE, the library will be built as static 
+#       library, if it is TRUE, it will be build as shared library.
+#     - It sets the compile definition NOSTRA_HAS_<project prefix> as an INTERFACE compile definition. This macro can
+#       then be used by another project that uses the library to check if it can be used (e.g. is it possible to only 
+#       include the header files from this library if the macro is defined).
+#       
+# This function can only be called, if nostra_project() was called first.
+#]]
 function(nostra_add_library NAME)
     _nostra_check_if_nostra_project()
 
@@ -977,4 +1061,3 @@ function(nostra_add_library NAME)
         INTERFACE
             "NOSTRA_HAS_${PROJECT_PREFIX}")
 endfunction()
-
