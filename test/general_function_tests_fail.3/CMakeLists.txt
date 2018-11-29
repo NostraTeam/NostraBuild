@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-include("${CMAKE_SOURCE_DIR}/../../src/Nostra.cmake")
+include("${CMAKE_SOURCE_DIR}/../../src/nostra/Nostra.cmake")
 
 function(testfunc)
     cmake_parse_arguments(FUNC "" "" "" ${ARGN})

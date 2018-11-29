@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 set(NOSTRA_CMAKE_DEBUG "ON")
 
-include("${CMAKE_SOURCE_DIR}/../../src/Nostra.cmake")
+include("${CMAKE_SOURCE_DIR}/../../src/nostra/Nostra.cmake")
 
 add_library(TestShared SHARED "source.c")
 add_library(TestStatic STATIC "source.c")

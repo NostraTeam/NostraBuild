@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared libraries." OFF)
 
-include("src/Nostra.cmake")
+include("src/nostra/Nostra.cmake")
 
 include(CTest)
 

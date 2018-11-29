@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 option(NOSTRA_BUILD_SHARED "If enabled, the library will be build as shared library." OFF)
 
-include("${CMAKE_SOURCE_DIR}/../../../src/Nostra.cmake")
+include("${CMAKE_SOURCE_DIR}/../../../src/nostra/Nostra.cmake")
 
 nostra_project(NostraCppTestProject ntp
     VERSION 1.0.0.0
