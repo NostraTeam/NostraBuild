@@ -2,7 +2,30 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 option(NOSTRA_BUILD_EXAMPLES "If enabled, the examples of all Nostra projects will be build." ON)
 
-# TODO: add cmake_parse_arguments() and _nostra_check_params() to all functions
+# TODO: add cmake_parse_arguments() and _nostra_check_parameters() to all functions
+
+#[[
+Checks if FUNC_UNPARSED_ARGUMENTS is defined and triggers an error if it is not.
+
+This can be used to check if there were unexpected arguments passed to function or macro.
+Usually, this used with and used after cmake_parse_arguments().
+#]]
+macro(_nostra_check_parameters)
+    if(DEFINED FUNC_UNPARSED_ARGUMENTS)
+        message(SEND_ERROR "unknown argument \"${FUNC_UNPARSED_ARGUMENTS}\"")
+    endif()
+endmacro()
+
+#[[
+Makes sure that ARGN has a size of 0. If that is not the case, an error will be triggered.
+
+This function can not be used when cmake_parse_arguments() is used in the same function.
+#]]
+function(_nostra_check_no_parameters)
+    if(ARGC GREATER 0)
+        message(SEND_ERROR "Unexpected parameters were passed to a function: ${ARGN}")
+    endif()
+endfunction()
 
 #[[
 Parameters:
@@ -15,6 +38,7 @@ E.g.:
 The list "one;two;three" and the prefix "prefix_" would result in the list "prefix_one;prefix_two;prefix_three".
 #]]
 function(nostra_prefix_list OUT PREFIX)
+    _nostra_check_no_parameters()
 	set(LIST_INTERNAL "")
 
 	foreach(STR IN LISTS ARGN)
@@ -36,6 +60,7 @@ The list "one;two;three" and the suffix "suffix_" would result in the list "one_
 ""
 #]]
 function(nostra_suffix_list OUT SUFFIX)
+    _nostra_check_no_parameters()
 	set(LIST_INTERNAL "")
 
 	foreach(STR IN LISTS ARGN)
@@ -45,25 +70,15 @@ function(nostra_suffix_list OUT SUFFIX)
 	set("${OUT}" "${LIST_INTERNAL}" PARENT_SCOPE)
 endfunction()
 
-#[[
-Checks if FUNC_UNPARSED_ARGUMENTS is defined and triggers an error if it is not.
-
-This can be used to check if there were unexpected arguments passed to function or macro.
-Usually, this used with and used after cmake_parse_arguments().
-#]]
-macro(_nostra_check_parameters)
-    if(DEFINED FUNC_UNPARSED_ARGUMENTS)
-        message(SEND_ERROR "unknown argument \"${FUNC_UNPARSED_ARGUMENTS}\"")
-    endif()
-endmacro()
-
 macro(_nostra_print_debug NOSTRA_CMAKE_STR)
+    _nostra_check_no_parameters()
     if(NOSTRA_CMAKE_DEBUG)
         message(STATUS "[NOSTRA_CMAKE_DEBUG] ${NOSTRA_CMAKE_STR}")
     endif()
 endmacro()
 
 macro(_nostra_print_debug_value NOSTRA_CMAKE_VARNAME)
+    _nostra_check_no_parameters()
     _nostra_print_debug("${NOSTRA_CMAKE_VARNAME}=${${NOSTRA_CMAKE_VARNAME}}")
 endmacro()
 
@@ -133,12 +148,14 @@ endmacro()
 # Copies everything from RESOURCE_IN to RESOURCE_OUT, but only if RESOURCE_IN exists.
 #]]
 function(_nostra_copy_resources_dir RESOURCE_IN RESOURCE_OUT)
+    _nostra_check_no_parameters()  
     if(EXISTS "${RESOURCE_IN}")
         file(COPY "${RESOURCE_IN}" DESTINATION "${RESOURCE_OUT}")
     endif()
 endfunction()
 
 macro(_nostra_check_if_nostra_project)
+    _nostra_check_no_parameters()
     if(NOT DEFINED PROJECT_PREFIX)
         message(SEND_ERROR "PROJECT_PREFIX is not defined, has nostra_project() been called?")
     endif()
@@ -152,6 +169,7 @@ endmacro()
 # the function will trigger an error.
 #]]
 function(_nostra_check_if_lib TARGET)
+    _nostra_check_no_parameters()
     get_target_property(NOSTRA_CMAKE_TARGET_TYPE ${TARGET} TYPE)
 
     if(NOT "${NOSTRA_CMAKE_TARGET_TYPE}" MATCHES "(SHARED|STATIC)_LIBRARY")
@@ -282,30 +300,31 @@ endmacro()
 # After copying, the files will have the extension .cpp.
 #]]
 function(_nostra_copy_source_tree_to_cpp TEST_NAME DIR_NAME CPP_TEST_DIR ADDITIONAL_SOURCES ADDITIONAL_SOURCES_OUT)
-        # Must end with .c.cpp b/c this is the language of the test
-        # Copy the main source file <testname>.c into a separate directory (test/cpp/test/<test dir>/src)
-        configure_file("${DIR_NAME}/src/${TEST_NAME}.c" "${CPP_TEST_DIR}/src/${TEST_NAME}.c.cpp" COPYONLY)
+    _nostra_check_no_parameters()
+    # Must end with .c.cpp b/c this is the language of the test
+    # Copy the main source file <testname>.c into a separate directory (test/cpp/test/<test dir>/src)
+    configure_file("${DIR_NAME}/src/${TEST_NAME}.c" "${CPP_TEST_DIR}/src/${TEST_NAME}.c.cpp" COPYONLY)
 
-        #=============================
-        # Converts ADDITIONAL_SOURCES (which is a list of .c files) into a list of .cpp files
-        #
-        # E.g.: source.c -> source.c.cpp (they must end with .c.cpp not just .cpp)
-        #
-        # AND
-        # 
-        # Copies those files into a separate directory (test/cpp/test/<test dir>/src)
-        #=============================
-        # Create additional source file list to pass to _nostra_add_test_helper()
-        # Paths need to be unprocessed, the source must not be FUNC_ACTUAL_ADD_SOURCES
-        set(ADDITIONAL_SOURCES_CPP "")
+    #=============================
+    # Converts ADDITIONAL_SOURCES (which is a list of .c files) into a list of .cpp files
+    #
+    # E.g.: source.c -> source.c.cpp (they must end with .c.cpp not just .cpp)
+    #
+    # AND
+    # 
+    # Copies those files into a separate directory (test/cpp/test/<test dir>/src)
+    #=============================
+    # Create additional source file list to pass to _nostra_add_test_helper()
+    # Paths need to be unprocessed, the source must not be FUNC_ACTUAL_ADD_SOURCES
+    set(ADDITIONAL_SOURCES_CPP "")
 
-        foreach(ADD_SRC_FILE IN LISTS ADDITIONAL_SOURCES)
-            configure_file("${DIR_NAME}/src/${ADD_SRC_FILE}" "${CPP_TEST_DIR}/src/${ADD_SRC_FILE}.cpp" COPYONLY)
-            list(APPEND ADDITIONAL_SOURCES_CPP "${ADD_SRC_FILE}.cpp")
-        endforeach()
+    foreach(ADD_SRC_FILE IN LISTS ADDITIONAL_SOURCES)
+        configure_file("${DIR_NAME}/src/${ADD_SRC_FILE}" "${CPP_TEST_DIR}/src/${ADD_SRC_FILE}.cpp" COPYONLY)
+        list(APPEND ADDITIONAL_SOURCES_CPP "${ADD_SRC_FILE}.cpp")
+    endforeach()
 
-        set("${ADDITIONAL_SOURCES_OUT}" "${ADDITIONAL_SOURCES_CPP}" PARENT_SCOPE)
-        #=============================
+    set("${ADDITIONAL_SOURCES_OUT}" "${ADDITIONAL_SOURCES_CPP}" PARENT_SCOPE)
+    #=============================
 endfunction()
 
 #[[
@@ -576,6 +595,8 @@ endfunction()
 # will be the value of TARGET.
 #]]
 function(nostra_alias_get_actual_name OUT_VAR TARGET)
+    _nostra_check_no_parameters()
+
     get_target_property(ALIAS_NAME "${TARGET}" ALIASED_TARGET)
 
     if(NOT "${ALIAS_NAME}" STREQUAL "ALIAS_NAME-NOTFOUND")
@@ -586,6 +607,8 @@ function(nostra_alias_get_actual_name OUT_VAR TARGET)
 endfunction()
 
 function(nostra_get_compiler_id OUT_VAR)
+    _nostra_check_no_parameters()
+
     get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
     if("CXX" IN_LIST ENABLED_LANGUAGES)
@@ -610,6 +633,8 @@ endfunction()
 # # Now, MY_TARGET stores the name of the actual of the target, even if it was an alias name before
 #]]
 function(nostra_alias_to_actual_name VAR)
+    _nostra_check_no_parameters()
+
     nostra_alias_get_actual_name(OUT_VAR ${${VAR}})
     set("${VAR}" "${OUT_VAR}" PARENT_SCOPE)
 endfunction()
@@ -619,6 +644,8 @@ set(_NOSTRA_CMAKE_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # Helper for nostra_generate_export_header(). See doc of that function.
 function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
+    _nostra_check_no_parameters()
+
     nostra_alias_to_actual_name(TARGET)
 
     _nostra_check_if_nostra_project()
@@ -728,6 +755,7 @@ endmacro()
 # This function can only be called, if nostra_project() was called first.
 #]]
 function(nostra_message STR)
+    _nostra_check_no_parameters()
     _nostra_check_if_nostra_project()
 
     message(STATUS "${PROJECT_NAME}: ${STR}")
@@ -740,6 +768,8 @@ endfunction()
 # Stores in OUT_VAR whether the language C is currently enabled.
 #]]
 function(_nostra_is_c_enabled OUT_VAR)
+    _nostra_check_no_parameters()
+
     get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
     list(FIND "${LANGUAGES}" "C" ${OUT_VAR}) # Check if the language is in the list, if it is, it is enabled
@@ -754,6 +784,8 @@ endfunction()
 # Stores in OUT_VAR whether the language C++ is currently enabled.
 #]]
 function(_nostra_is_cpp_enabled OUT_VAR)
+    _nostra_check_no_parameters()
+
     get_property(LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
     list(FIND "${LANGUAGES}" "CXX" ${OUT_VAR}) # Check if the language is in the list, if it is, it is enabled
@@ -881,7 +913,6 @@ function(nostra_generate_doc)
 endfunction()
 
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
-
     cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
 
     if(NOT DEFINED FUNC_EXAMPLE_TARGET)
@@ -930,7 +961,6 @@ function(nostra_add_cpp_example EXAMPLE_NAME)
 endfunction()
 
 function(nostra_add_library NAME)
-
     _nostra_check_if_nostra_project()
 
     option("${PROJECT_PREFIX}_BUILD_${NAME}_SHARED" "If enabled, the library ${NAME} will be build as shared library.")
@@ -947,6 +977,8 @@ function(nostra_add_library NAME)
 endfunction()
 
 function(nostra_get_compiler_id OUT_VAR)
+    _nostra_check_no_parameters()
+
     get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
 
     if("CXX" IN_LIST ENABLED_LANGUAGES)

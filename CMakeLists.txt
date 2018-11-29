@@ -24,6 +24,14 @@ add_test(
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_list_functions")
 
+add_test(
+    NAME
+        "ncm.cmake._nostra_check_no_parameters.wt"
+    COMMAND
+        "cmake" "-P" "_nostra_check_no_parameters.cmake"
+    WORKING_DIRECTORY
+        "${CMAKE_SOURCE_DIR}/test/nostra_list_functions")
+        
 # TODO: Clean up the following process, if possible, do not rely on platform specific cmd line interpreters
 
 # Choose cmd line interpreter for the command; cmd.exe on Windows, Bourne Shell on Unix. 
@@ -42,6 +50,7 @@ file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/buil
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.3/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.4/build")
+file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
 
 # Each of these tests call the commands "cmake ..", "cmake --build .", "ctest"; in that order and all of them need
 # to be successful.
@@ -121,3 +130,13 @@ add_test(
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.4/build")
 
 set_property(TEST "ncm.cmake.general_function_tests_fail.4" PROPERTY PASS_REGULAR_EXPRESSION "Failed")      
+
+add_test(
+    NAME
+        "ncm.cmake.general_function_tests_fail.5"
+    COMMAND 
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+    WORKING_DIRECTORY
+        "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
+
+set_property(TEST "ncm.cmake.general_function_tests_fail.5" PROPERTY PASS_REGULAR_EXPRESSION "Failed")      
