@@ -830,9 +830,9 @@ function(nostra_generate_doc)
 
             # Handle dot usage/configuration
             if(TARGET Doxygen::dot)
-                nostra_message("Doxygen: Found dot at ${DOT_EXECUTABLE}.")
-
                 get_target_property(DOT_EXECUTABLE Doxygen::dot IMPORTED_LOCATION)
+
+                nostra_message("Doxygen: Found dot at ${DOT_EXECUTABLE}.")
 
                 set(NOSTRA_CMAKE_HAVE_DOT "YES")
                 set(NOSTRA_CMAKE_DOT_PATH "${DOT_EXECUTABLE}")
