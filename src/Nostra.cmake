@@ -915,6 +915,8 @@ endfunction()
 function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
     cmake_parse_arguments(FUNC "" "EXAMPLE_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
 
+    set(EXAMPLE_NAME "${EXAMPLE_NAME}.ex") # Added .ex as suffix to the example name
+
     if(NOT DEFINED FUNC_EXAMPLE_TARGET)
         message(SEND_ERROR "parameter EXAMPLE_TARGET is required")
     endif()
@@ -938,11 +940,11 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
         set_source_files_properties("${SRC}" PROPERTIES LANGUAGE "${UPPER_LANG}")
     endforeach()
 
-    add_executable("${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" "${FUNC_ADDITIONAL_SOURCES}")
+    add_executable("${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" "${FUNC_ADDITIONAL_SOURCES}")
 
-    target_link_libraries("${EXAMPLE_NAME}" "${FUNC_EXAMPLE_TARGET}")
+    target_link_libraries("${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" "${FUNC_EXAMPLE_TARGET}")
 
-    install(TARGETS "${EXAMPLE_NAME}" EXPORT "${PROJECT_EXPORT}"
+    install(TARGETS "${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" EXPORT "${PROJECT_EXPORT}"
         RUNTIME 
             DESTINATION "examples"
             COMPONENT "Examples")
