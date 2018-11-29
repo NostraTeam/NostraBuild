@@ -32,7 +32,7 @@ function(_nostra_get_original_language OUT_VAR LANGUAGE)
     elseif(LANGUAGE STREQUAL "cpp")
         set("${OUT_VAR}" "cpp" PARENT_SCOPE)
     else()
-        nostra_send_error("Invalid language ${LANGUAGE}")
+        nostra_print_error("Invalid language ${LANGUAGE}")
     endif()
 endfunction()
 
@@ -47,7 +47,7 @@ function(_nostra_set_test_success_requirement TEST_TARGET WILL_FAIL)
     _nostra_check_no_parameters()    
 
     if(NOT TARGET "${TEST_TARGET}")
-        nostra_send_error("${TEST_TARGET} is not a test target")
+        nostra_print_error("${TEST_TARGET} is not a test target")
     endif()
 
     if(WILL_FAIL)
@@ -84,23 +84,23 @@ macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
     _nostra_get_original_language(ORIGINAL_LANGUAGE ${LANGUAGE})
 
     if(NOT DEFINED FUNC_TEST_NAME)
-        nostra_send_error("TEST_NAME is required.")
+        nostra_print_error("TEST_NAME is required.")
     endif()
 
     if(NOT DEFINED FUNC_TEST_TYPE)
-        nostra_send_error("TEST_TYPE is required.")
+        nostra_print_error("TEST_TYPE is required.")
     endif()
 
     if(NOT ("${FUNC_TEST_TYPE}" STREQUAL "wt" OR "${FUNC_TEST_TYPE}" STREQUAL "bt"))
-        nostra_send_error("Invalid test type (only wt and bt are allowed).")
+        nostra_print_error("Invalid test type (only wt and bt are allowed).")
     endif()
 
     if(NOT ("${EXEC_TYPE}" STREQUAL "bu" OR "${EXEC_TYPE}" STREQUAL "ex"))
-        nostra_send_error("Invalid execution type (only bu and ex are allowed).")
+        nostra_print_error("Invalid execution type (only bu and ex are allowed).")
     endif()
 
     if(NOT DEFINED FUNC_TEST_TARGET)
-        nostra_send_error("parameter TEST_TARGET is required")
+        nostra_print_error("parameter TEST_TARGET is required")
     endif()
 
     if(FUNC_SHOULD_FAIL)

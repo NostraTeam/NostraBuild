@@ -50,11 +50,11 @@ function(nostra_copy_file IN_FILE OUT_FILE)
 endfunction()
 
 if("${NOSTRA_NAME}" STREQUAL "")
-    nostra_send_error("NOSTRA_NAME must not be empty.")
+    nostra_print_error("NOSTRA_NAME must not be empty.")
 endif()
 
 if("${NOSTRA_PREFIX}" STREQUAL "")
-    nostra_send_error("NOSTRA_PREFIX must not be empty.")
+    nostra_print_error("NOSTRA_PREFIX must not be empty.")
 endif()
 
 # Variables that are required for configuring cmake/in/cmake/export.h.in
