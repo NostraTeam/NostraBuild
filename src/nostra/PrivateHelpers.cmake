@@ -115,3 +115,27 @@ function(_nostra_is_cpp_enabled OUT_VAR)
 
     set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
 endfunction()
+
+#[[
+# Parameters:
+#   - LANGUAGE: The language to set. "c" or "c.cpp" for C and "cpp" for CXX.
+#   - ARGN:     The files to set the language of.
+#
+# Sets the language of the files in ARGN.
+#]]
+function(_nostra_set_source_file_language LANGUAGE)
+    # ARGN holds the list of source files    
+
+    if(LANGUAGE STREQUAL "c" OR LANGUAGE STREQUAL "c.cpp")
+        set(UPPER_LANG "C")
+    elseif(LANGUAGE STREQUAL "cpp")
+        set(UPPER_LANG "CXX")
+    else()
+        nostra_send_error("Invalid language ${LANGUAGE}")
+    endif()
+
+    foreach(FILE IN LISTS ARGN)
+        set_source_files_properties("${SRC}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+    endforeach()
+endfunction()
+
