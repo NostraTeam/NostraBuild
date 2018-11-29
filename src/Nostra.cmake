@@ -864,7 +864,7 @@ function(nostra_generate_doc)
 	    	configure_file("doc/Doxyfile.in" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile")
 
 	    	add_custom_target(NostraSocketWrapperDoc
-	    		ALL COMMAND Doxygen::doxygen "${OUTPUT_DIR}/Doxyfile"
+	    		ALL COMMAND Doxygen::doxygen "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile"
 	    		WORKING_DIRECTORY "."
 	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}"
 	    		VERBATIM)
