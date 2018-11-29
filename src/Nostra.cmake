@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 option(NOSTRA_BUILD_EXAMPLES "If enabled, the examples of all Nostra projects will be build." ON)
 
@@ -833,6 +833,8 @@ function(nostra_generate_doc)
 
     if(NOT DEFINED FUNC_OUT_DIR)
         set(NOSTRA_CMAKE_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
+    else()
+        set(NOSTRA_CMAKE_OUT_DIR "FUNC_OUT_DIR")
     endif()
 
     # Add the option for the current project
