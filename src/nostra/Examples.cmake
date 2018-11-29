@@ -27,7 +27,7 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
     set(EXAMPLE_NAME "${EXAMPLE_NAME}.ex") # Added .ex as suffix to the example name
 
     if(NOT DEFINED FUNC_EXAMPLE_TARGET)
-        message(SEND_ERROR "parameter EXAMPLE_TARGET is required")
+        nostra_send_error("parameter EXAMPLE_TARGET is required")
     endif()
 
     _nostra_check_parameters()
@@ -38,7 +38,7 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
     elseif(${LANGUAGE} STREQUAL "cpp")
         set(UPPER_LANG "CXX")
     else()
-        message(SEND_ERROR "Invalid language ${LANGUAGE}")
+        nostra_send_error("Invalid language ${LANGUAGE}")
     endif()
 
     set_source_files_properties("examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")

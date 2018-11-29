@@ -58,7 +58,7 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
         set(NOSTRA_CMAKE_NO_EXPORT_ATTRIBUTE "__attribute__((visibility(\"hidden\")))")
         set(NOSTRA_CMAKE_DEPRECATED_ATTRIBUTE "__attribute__((__deprecated__))")
     else()
-        message(SEND_ERROR "The compiler with the ID ${NOSTRA_COMPILER_ID} is not supported.")
+        nostra_send_error("The compiler with the ID ${NOSTRA_COMPILER_ID} is not supported.")
     endif()
 
     # If OUT_DIR is undefined, explicitly define it. This is required b/c the next configure_file() command would put

@@ -14,6 +14,8 @@ option(NOSTRA_HAVE_CLANG_FORMAT "If disabled, .clang-format will not be part of 
 option(NOSTRA_HAVE_CLANG_TIDY "If disabled, .clang-tidy will not be part of the new project tree." ON)
 option(NOSTRA_HAVE_CONFIG_H "If disabled, no config.h will be used by the new project." ON)
 
+include("${CMAKE_CURRENT_LIST_DIR}/PrivateHelpers.cmake")
+
 set(NOSTRA_NAME_CAMEL "Nostra${NOSTRA_NAME}")
 string(TOUPPER "${NOSTRA_NAME}" NOSTRA_NAME_UPPER)
 string(TOLOWER "${NOSTRA_NAME}" NOSTRA_NAME_LOWER)
@@ -48,11 +50,11 @@ function(nostra_copy_file IN_FILE OUT_FILE)
 endfunction()
 
 if("${NOSTRA_NAME}" STREQUAL "")
-    message(SEND_ERROR "NOSTRA_NAME must not be empty.")
+    nostra_send_error("NOSTRA_NAME must not be empty.")
 endif()
 
 if("${NOSTRA_PREFIX}" STREQUAL "")
-    message(SEND_ERROR "NOSTRA_PREFIX must not be empty.")
+    nostra_send_error("NOSTRA_PREFIX must not be empty.")
 endif()
 
 # Variables that are required for configuring cmake/in/cmake/export.h.in

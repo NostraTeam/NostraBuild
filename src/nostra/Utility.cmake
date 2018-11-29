@@ -139,7 +139,7 @@ function(nostra_get_compiler_id OUT_VAR)
     elseif("C" IN_LIST ENABLED_LANGUAGES) # If C is in the list but not CXX
         set("${OUT_VAR}" "${CMAKE_C_COMPILER_ID}" PARENT_SCOPE)
     else()
-        message(SEND_ERROR "Neither C nor C++ are enabled as languages.")
+        nostra_send_error("Neither C nor C++ are enabled as languages.")
     endif()
 endfunction()
 
@@ -171,6 +171,21 @@ endfunction()
 # This function can only be called, if nostra_project() was called first.
 #]]
 function(nostra_message STR)
+    _nostra_check_no_parameters()
+    _nostra_check_if_nostra_project()
+
+    message(STATUS "${PROJECT_NAME}: ${STR}")
+endfunction()
+
+#[[
+# Parameters:
+#   - STR: The string to print.
+#
+# Prints an error message in the format "<project name>: <STR>" and makes the configuration fail.
+#
+# This function can only be called, if nostra_project() was called first.
+#]]
+function(nostra_send_error STR)
     _nostra_check_no_parameters()
     _nostra_check_if_nostra_project()
 
