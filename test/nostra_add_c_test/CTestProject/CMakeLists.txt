@@ -26,5 +26,5 @@ include(CTest)
 
 enable_testing()
 
-nostra_add_c_test("component.wt" TEST_TARGET "Nostra::CTestLib" ADDITIONAL_SOURCES "source.c" TEST_CPP)
-nostra_add_c_test("component.1.wt" TEST_TARGET "Nostra::CTestLib" TEST_CPP NOCOPY)
+nostra_add_c_test("component" TEST_TYPE "wt" TEST_TARGET "Nostra::CTestLib" ADDITIONAL_SOURCES "source.c" TEST_CPP)
+nostra_add_c_test("component.1" TEST_TYPE "wt" TEST_TARGET "Nostra::CTestLib" TEST_CPP NOCOPY)

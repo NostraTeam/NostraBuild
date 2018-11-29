@@ -188,13 +188,14 @@ endfunction()
 
 #[[
 # Parameters:
-#   - TEST_NAME:                     The name of the test. Usually something like: component.wt 
+#   - TEST_NAME:                     The name of the test.
 #   - LANGUAGE:                      The language of the test. Determines the names of files/directories and file
 #                                    extensions of the source files.
 #   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
 #   - IN_DIR:                        The directory that the test is nested in (e.g. CMAKE_SOURCE_DIR).
 #   - OUT_DIR:                       The directory that the testfiles will be copied to if not NOCOPY 
 #                                    (e.g. CMAKE_CURRENT_BINARY_DIR).
+#   - TEST_TYPE:                     The type of the test, either whitebox (wt) or blackbox (bt).
 #   - NOCOPY [optional]:             If TRUE, the resources will not be copied and the working directory is somewhere 
 #                                    in a child directory of IN_DIR.
 #   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
@@ -204,15 +205,22 @@ endfunction()
 # - Copy the resources in IN_DIR/test/<test dir>/resources to OUT_DIR/test/<test dir>/resources (only if NOCOPY is 
 #   FALSE)
 # - Add an executable with the following source files (the file names are relative to IN_DIR/test/<test dir>/src):
-#   - TEST_NAME.LANGUAGE (e.g. component.cpp) (called: default source file, this file must always exist)
+#   - test.<language> (called: default source file, this file must always exist)
 #   - Any files listed in ADDITIONAL_SOURCES
 # - Install that executable into the export target PROJECT_EXPORT.
 # - Add the excutable as test (using add_test()). The working directory of that test will either be 
 #   IN_DIR/test/<test directory> or OUT_DIR/test/<test directory>, depending on NOCOPY being TRUE or FALSE.
 #]]
-# TODO: Fix test names
 macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
-    cmake_parse_arguments(FUNC "NOCOPY" "TEST_TARGET" "ADDITIONAL_SOURCES" "${ARGN}")
+    cmake_parse_arguments(FUNC "NOCOPY" "TEST_TARGET;TEST_TYPE" "ADDITIONAL_SOURCES" "${ARGN}")
+
+    if(NOT DEFINED FUNC_TEST_TYPE)
+        message(SEND_ERROR "TEST_TYPE is required.")
+    endif()
+
+    if(NOT (FUNC_TEST_TYPE STREQUAL "wt" OR FUNC_TEST_TYPE STREQUAL "bt"))
+        message(SEND_ERROR "Invalid test type (only wt and bt are allowed).")
+    endif()
 
     if(NOT DEFINED FUNC_TEST_TARGET)
         message(SEND_ERROR "parameter TEST_TARGET is required")
@@ -227,7 +235,7 @@ macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
     _nostra_check_parameters()
 
     # The name of the test executable
-    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.${TEST_NAME}")
+    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.ex.s.${TEST_NAME}.${FUNC_TEST_TYPE}")
     set(DIR_NAME "test/${TARGET_NAME}.d")
 
     _nostra_print_debug("============================")
@@ -237,6 +245,7 @@ macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
     _nostra_print_debug_value(FUNC_TEST_TARGET)
     _nostra_print_debug_value(FUNC_ADDITIONAL_SOURCES)
     _nostra_print_debug_value(LANGUAGE)
+    _nostra_print_debug_value(FUNC_TEST_TYPE)
     _nostra_print_debug_value(FUNC_NOCOPY)
 
     # Set WORKING_DIR and copy resources if necessary
@@ -263,9 +272,9 @@ macro(_nostra_add_test_helper TEST_NAME LANGUAGE IN_DIR OUT_DIR)
     nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${IN_DIR}/${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
 
     _nostra_print_debug_value(FUNC_ACTUAL_ADD_SOURCES)
-    _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}")
+    _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/test.${LANGUAGE}")
 
-    add_executable("${TARGET_NAME}" "${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" "${FUNC_ACTUAL_ADD_SOURCES}")
+    add_executable("${TARGET_NAME}" "${IN_DIR}/${DIR_NAME}/src/test.${LANGUAGE}" "${FUNC_ACTUAL_ADD_SOURCES}")
 
     target_link_libraries("${TARGET_NAME}" 
         PRIVATE
@@ -312,7 +321,9 @@ function(_nostra_copy_source_tree_to_cpp TEST_NAME DIR_NAME CPP_TEST_DIR ADDITIO
     _nostra_check_no_parameters()
     # Must end with .c.cpp b/c this is the language of the test
     # Copy the main source file <testname>.c into a separate directory (test/cpp/test/<test dir>/src)
-    configure_file("${DIR_NAME}/src/${TEST_NAME}.c" "${CPP_TEST_DIR}/src/${TEST_NAME}.c.cpp" COPYONLY)
+    configure_file("${DIR_NAME}/src/test.c" "${CPP_TEST_DIR}/src/test.c.cpp" COPYONLY)
+
+    message("=======: ${CPP_TEST_DIR}")
 
     #=============================
     # Converts ADDITIONAL_SOURCES (which is a list of .c files) into a list of .cpp files
@@ -337,11 +348,37 @@ function(_nostra_copy_source_tree_to_cpp TEST_NAME DIR_NAME CPP_TEST_DIR ADDITIO
 endfunction()
 
 #[[
-# In general, this is the same function as nostra_add_cpp_test() but for C instead of C++ (the tests will be called 
-# <project prefix>.cpp.<test name>.). The only other difference is the additional, optional flag parameter TEST_CPP. If 
-# that flag is set, the test will be added a second time, but as C++ test (the test is called 
-# <project prefix>.c.cpp.<test name>). The C++ test will also have its seperate working directory that the resources
-# will have been copied to.
+# Parameters:
+#   - TEST_NAME:                                      The name of the test. According to the Nostra convetion, this is 
+#                                                     the name of the component that the test is for, (or another 
+#                                                     fitting name if the  test does not test a single component).
+#   - TEST_TYPE:                                      The type of the test, either wt (if the test is a whitebox test)
+#                                                     or bt (if the test is a blackbox test).
+#   - TEST_TARGET [single value]:                     The target to test, i.e. the target that the test executable will  
+#                                                     be linked aginst.
+#   - NOCOPY [flag, optional]:                        If set, the test will be run in the source directory instead of  
+#                                                     the build directory and no resources will be copied.
+#   - ADDITIONAL_SOURCES [multiple values, optional]: Additional source files aside from the default file that each  
+#                                                     test has.
+#   - TEST_CPP[flag, optional]:                       If set, the test will be added again as C++ test.
+# 
+# A function that creates unit tests for C that test a single target (that target is passed using TEST_TARGET). 
+# The tests need to be in the standard layout as defined by the Nostra convention.
+# 
+# Unless the flag NOCOPY has been passed, the files from test/<test name>/resources will be copied into the build
+# directory and the test executable will be executed in that directory.
+# 
+# The tests will have the name <project prefix>.c.ex.s.<test name>.<test type>.
+#
+# If TEST_CPP is set, the test will also be run as C++ test (this time it will be called 
+# <project prefix>.c.cpp.ex.s.<test name>.<test type>). That test will have its seperate working directory (the 
+# resources will also be copied to that seperate working directory, no matter what the value of NOCOPY is). TEST_CPP is
+# useful to make sure that a library can also be properly linked against when used in a C++ project.
+#
+# This function can only be called, if nostra_project() was called first as well as CTest needs to be included using 
+# include() and enable_testing() needs to have been called.
+#
+# The test will only be added and build if BUILD_TESTING is TRUE.
 #]]
 function(nostra_add_c_test TEST_NAME)
     if(BUILD_TESTING)
@@ -351,9 +388,9 @@ function(nostra_add_c_test TEST_NAME)
 
         if(FUNC_TEST_CPP)
             # Re-Build TEST_DIR from scratch, but change <prefix>.c.<name>.d to <prefix>.c.cpp.<name>.d
-            set(CPP_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.${TEST_NAME}.d")
+            set(CPP_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/test/cpp/test/${PROJECT_PREFIX}.c.cpp.ex.s.${TEST_NAME}.${FUNC_TEST_TYPE}.d")
 
-            #=============================
+            #============================= TODO: this is not correcty anymore, but will likely removed
             # Copy the source dir of the test into the build dir
             # 
             # Copy the test dir into build/test/cpp
@@ -400,6 +437,8 @@ function(nostra_add_c_test TEST_NAME)
                     "c.cpp"                                # Language (c.cpp to distingush from regular c/cpp tests)
                     "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Input dir is the directory that the files were copied into
                     "${CMAKE_CURRENT_BINARY_DIR}/test/cpp" # Output dir is this aswell
+                TEST_TYPE
+                    "${FUNC_TEST_TYPE}"
                 TEST_TARGET
                     "${FUNC_TEST_TARGET}"                  # The test target is still the same
                 ADDITIONAL_SOURCES
@@ -412,28 +451,33 @@ endfunction()
 #[[
 # Parameters:
 #   - TEST_NAME:                                      The name of the test. According to the Nostra convetion, this is 
-#                                                     <component name>.(wt|bt), with <component name> being the name of 
-#                                                     the component that will be tested (or another fitting name if the 
-#                                                     test does not test a single component) and (wt|bt) being wt in  
-#                                                     the case of a whitebox test and bt in the case of a blackbox test.
+#                                                     the name of the component that the test is for, (or another 
+#                                                     fitting name if the  test does not test a single component).
+#   - TEST_TYPE:                                      The type of the test, either wt (if the test is a whitebox test)
+#                                                     or bt (if the test is a blackbox test).
+#   - TEST_TARGET [single value]:                     The target to test, i.e. the target that the test executable will  
+#                                                     be linked aginst.
 #   - NOCOPY [flag, optional]:                        If set, the test will be run in the source directory instead of  
 #                                                     the build directory and no resources will be copied.
-#   - TEST_TARGET [single value, optional]:           The target to test, i.e. the target that the test executable will  
-#                                                     be linked aginst.
 #   - ADDITIONAL_SOURCES [multiple values, optional]: Additional source files aside from the default file that each  
 #                                                     test has.
 # 
-# A function that creates unit tests for C++ to test a single target (that target is passed using TEST_TARGET). 
+# A function that creates unit tests for C++ that test a single target (that target is passed using TEST_TARGET). 
 # The tests need to be in the standard layout as defined by the Nostra convention.
 # 
 # Unless the flag NOCOPY has been passed, the files from test/<test name>/resources will be copied into the build
 # directory and the test executable will be executed in that directory.
 # 
-# The tests will have the name <project prefix>.cpp.<test name>.
+# The tests will have the name <project prefix>.cpp.ex.s.<test name>.<test type>.
 #
-# This function can only be called, if nostra_project() was called first.
+# This function can only be called, if nostra_project() was called first as well as CTest needs to be included using 
+# include() and enable_testing() needs to have been called.
+#
+# The test will only be added and build if BUILD_TESTING is TRUE.
 #]] 
-# TODO update the entire doc of test related functions
+# TODO use the language property to set the language to C or C++. This would also not required copying the entire test 
+#      tree for a c++ test
+# TODO Add support for test numbers
 function(nostra_add_cpp_test TEST_NAME)
     if(BUILD_TESTING)
         _nostra_add_test_helper("${TEST_NAME}" "cpp" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${ARGN}")
@@ -442,7 +486,8 @@ endfunction()
 
 #[[
 # Parameters:
-#   - TEST_NAME: The name of the test.
+#   - TEST_NAME:                     The name of the test.
+#   - TEST_TYPE:                     wt or bt
 #   - LANGUAGE:                      Either c or cpp, determines parts of the name of the test.
 #   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
 #   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
@@ -455,13 +500,19 @@ endfunction()
 #
 # This function can only be called, if nostra_project() was called first.
 #]]
-# TODO: right now, TEST_NAME contains the component name, the type (wt/bt) and number. this should be split up
 # TODO: Add support for multiple, additional targets
 # TODO: Add required resource files for tests
-# TODO: add comment that CTest needs to be included and enable_testing() needs to have been called
 function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
-    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET" "ADDITIONAL_SOURCES" ${ARGN})
+    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET;TEST_TYPE" "ADDITIONAL_SOURCES" ${ARGN})
     
+    if(NOT DEFINED FUNC_TEST_TYPE)
+        message(SEND_ERROR "TEST_TYPE is required.")
+    endif()
+
+    if(NOT (FUNC_TEST_TYPE STREQUAL "wt" OR FUNC_TEST_TYPE STREQUAL "bt"))
+        message(SEND_ERROR "Invalid test type (only wt and bt are allowed).")
+    endif()
+
     if(NOT DEFINED FUNC_TEST_TARGET)
         message(SEND_ERROR "parameter TEST_TARGET is required")
     endif()
@@ -477,7 +528,7 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
     endif()
 
     # The name of the test executable
-    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.bu.${SUCCESS_REQUIREMENT}.${TEST_NAME}")
+    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.bu.${SUCCESS_REQUIREMENT}.${TEST_NAME}.${FUNC_TEST_TYPE}")
     set(DIR_NAME "test/${TARGET_NAME}.d")
     set(IN_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
     set(OUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -489,12 +540,13 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
     _nostra_print_debug_value(FUNC_TEST_TARGET)
     _nostra_print_debug_value(FUNC_ADDITIONAL_SOURCES)
     _nostra_print_debug_value(LANGUAGE)
+    _nostra_print_debug_value(FUNC_TEST_TYPE)
 
     # Properly prefix the additional source files to locate them in test/<test name>.d/src/
     nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${IN_DIR}/${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
 
     _nostra_print_debug_value(FUNC_ACTUAL_ADD_SOURCES)
-    _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}")
+    _nostra_print_debug("main source file=${IN_DIR}/${DIR_NAME}/src/test.${LANGUAGE}")
 
     if("${LANGUAGE}" STREQUAL "c")
         set(UPPER_LANG "C")
@@ -505,7 +557,7 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
     endif()
 
     # Set language of the default source file
-    set_source_files_properties("${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+    set_source_files_properties("${IN_DIR}/${DIR_NAME}/src/test.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
 
     # Set language of the additional source files
     foreach(F IN LISTS FUNC_ACTUAL_ADD_SOURCES)
@@ -516,7 +568,7 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
     add_library("${TARGET_NAME}" 
         STATIC 
         EXCLUDE_FROM_ALL # should not be build with the other targets, instead this is build during CTest
-        "${IN_DIR}/${DIR_NAME}/src/${TEST_NAME}.${LANGUAGE}" # default source file
+        "${IN_DIR}/${DIR_NAME}/src/test.${LANGUAGE}" # default source file
         "${FUNC_ACTUAL_ADD_SOURCES}")
 
     target_link_libraries("${TARGET_NAME}" 
@@ -553,7 +605,24 @@ function(_nostra_add_compile_test_helper TEST_NAME LANGUAGE)
 endfunction()
 
 #[[
-# The same as nostra_add_cpp_compile_test() but a C compiler will be used to compile the target.
+# Parameters:
+#   - TEST_NAME:                     The name of the test.
+#   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
+#   - TEST_TYPE:                     The type of the test, either wt (if the test is a whitebox test) or bt (if the 
+#                                    test is a blackbox test).
+#   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
+#   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+#
+# A function that creates unit tests that, instead of running an executable, will attempt to compile a target using a C 
+# compiler. If that compilation succeeds (or fails if SHOULD_FAIL is set), the test will be successful.
+#
+# Note that, even if the provided source files have the extension .cpp (or any other extension), the files will be
+# compiled as C code.
+#
+# This function can only be called, if nostra_project() was called first as well as CTest needs to be included using 
+# include() and enable_testing() needs to have been called.
+#
+# The test will only be added and build if BUILD_TESTING is TRUE.
 #]]
 function(nostra_add_c_compile_test TEST_NAME)
     if(BUILD_TESTING)
@@ -565,15 +634,21 @@ endfunction()
 # Parameters:
 #   - TEST_NAME:                     The name of the test.
 #   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
+#   - TEST_TYPE:                     The type of the test, either wt (if the test is a whitebox test) or bt (if the 
+#                                    test is a blackbox test).
 #   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
 #   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
 #
-# A function that creates unit tests that, instead of running an executable, will attempt to compile a target. If that
-# compilation succeeds (or fails if SHOULD_FAIL is set), the test will be successful.
+# A function that creates unit tests that, instead of running an executable, will attempt to compile a target using a 
+# C++ compiler. If that compilation succeeds (or fails if SHOULD_FAIL is set), the test will be successful.
 #
-# For all source files of this project, independently of their actual file extension, a C++ compiler will be used.
+# Note that, even if the provided source files have the extension .c (or any other extension), the files will be
+# compiled as C++ code.
 #
-# This function can only be called, if nostra_project() was called first.
+# This function can only be called, if nostra_project() was called first as well as CTest needs to be included using 
+# include() and enable_testing() needs to have been called.
+#
+# The test will only be added and build if BUILD_TESTING is TRUE.
 #]]
 function(nostra_add_cpp_compile_test TEST_NAME)
     if(BUILD_TESTING)
