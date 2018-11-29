@@ -26,21 +26,21 @@ include(CTest)
 
 enable_testing()
 
-nostra_add_c_compile_test("component" 
+nostra_add_c_compile_test(TEST_NAME "component" 
     TEST_TYPE
         "wt"
     TEST_TARGET 
         "Nostra::CTestLib")
 
 
-nostra_add_c_compile_test("component" 
+nostra_add_c_compile_test(TEST_NAME "component" 
     TEST_TYPE
         "wt"
     TEST_TARGET 
         "Nostra::CTestLib" 
     SHOULD_FAIL)
 
-nostra_add_cpp_compile_test("component" 
+nostra_add_cpp_compile_test(TEST_NAME "component" 
     TEST_TYPE
         "wt"
     TEST_TARGET 
@@ -49,7 +49,7 @@ nostra_add_cpp_compile_test("component"
         "source.cpp")
 
     
-nostra_add_cpp_compile_test("component" 
+nostra_add_cpp_compile_test(TEST_NAME "component" 
     TEST_TYPE
         "wt"
     TEST_TARGET 
