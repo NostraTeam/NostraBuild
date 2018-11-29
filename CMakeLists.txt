@@ -95,48 +95,48 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.1"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/build")
 
-set_property(TEST "ncm.cmake.general_function_tests_fail.1" PROPERTY PASS_REGULAR_EXPRESSION "Failed")
+set_tests_properties("ncm.cmake.general_function_tests_fail.1" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.2"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
        
-set_property(TEST "ncm.cmake.general_function_tests_fail.2" PROPERTY PASS_REGULAR_EXPRESSION "Failed")
+set_tests_properties("ncm.cmake.general_function_tests_fail.2" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.3"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.3/build")
        
- set_property(TEST "ncm.cmake.general_function_tests_fail.3" PROPERTY PASS_REGULAR_EXPRESSION "Failed")
+set_tests_properties("ncm.cmake.general_function_tests_fail.3" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.4"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.4/build")
 
-set_property(TEST "ncm.cmake.general_function_tests_fail.4" PROPERTY PASS_REGULAR_EXPRESSION "Failed")      
+set_tests_properties("ncm.cmake.general_function_tests_fail.4" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.5"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .. || echo Failed"
+        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
 
-set_property(TEST "ncm.cmake.general_function_tests_fail.5" PROPERTY PASS_REGULAR_EXPRESSION "Failed")      
+set_tests_properties("ncm.cmake.general_function_tests_fail.5" PROPERTIES WILL_FAIL "ON")  
