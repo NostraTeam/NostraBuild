@@ -126,9 +126,9 @@ endfunction()
 function(_nostra_set_source_file_language LANGUAGE)
     # ARGN holds the list of source files    
 
-    if(LANGUAGE STREQUAL "c" OR LANGUAGE STREQUAL "c.cpp")
+    if(LANGUAGE STREQUAL "c")
         set(UPPER_LANG "C")
-    elseif(LANGUAGE STREQUAL "cpp")
+    elseif(LANGUAGE STREQUAL "cpp" OR LANGUAGE STREQUAL "c.cpp")
         set(UPPER_LANG "CXX")
     else()
         nostra_send_error("Invalid language ${LANGUAGE}")
