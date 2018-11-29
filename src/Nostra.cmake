@@ -976,17 +976,3 @@ function(nostra_add_library NAME)
             "NOSTRA_HAS_${PROJECT_PREFIX}")
 endfunction()
 
-function(nostra_get_compiler_id OUT_VAR)
-    _nostra_check_no_parameters()
-
-    get_property(ENABLED_LANGUAGES GLOBAL PROPERTY ENABLED_LANGUAGES)
-
-    if("CXX" IN_LIST ENABLED_LANGUAGES)
-        set("${OUT_VAR}" "${CMAKE_CXX_COMPILER_ID}" PARENT_SCOPE)
-    elseif("C" IN_LIST ENABLED_LANGUAGES) # If C is in the list but not CXX
-        set("${OUT_VAR}" "${CMAKE_C_COMPILER_ID}" PARENT_SCOPE)
-    else()
-        message(SEND_ERROR "Neither C nor C++ are enabled as languages.")
-    endif()
-endfunction()
-
