@@ -882,9 +882,9 @@ function(nostra_generate_doc)
 	    	configure_file("doc/Doxyfile.in" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile")
 
 	    	add_custom_target(NostraSocketWrapperDoc
-	    		ALL COMMAND "${DOXYGEN_EXECUTABLE}" "${OUTPUT_DIR}/Doxyfile"
+	    		ALL COMMAND "${DOXYGEN_EXECUTABLE}" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile"
 	    		WORKING_DIRECTORY "."
-	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}."
+	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}"
 	    		VERBATIM)
 
 	    	install(DIRECTORY "${NOSTRA_CMAKE_OUT_DIR}/html/"
