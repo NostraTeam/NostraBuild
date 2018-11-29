@@ -13,7 +13,6 @@ Adds a prefix to all elements in a list.
 
 E.g.:
 The list "one;two;three" and the prefix "prefix_" would result in the list "prefix_one;prefix_two;prefix_three".
-""
 #]]
 function(nostra_prefix_list OUT PREFIX)
 	set(LIST_INTERNAL "")
@@ -762,23 +761,6 @@ function(_nostra_is_cpp_enabled OUT_VAR)
     set(${OUT_VAR} ${${OUT_VAR}} PARENT_SCOPE) # Make the result also visible outside of the function
 endfunction()
 
-macro(_nostra_generate_doc_forwards_comp_helper)
-    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.9.0") # This is only required if the version is after 2.8.
-        if(TARGET Doxygen::doxygen)
-            get_target_property(DOXYGEN_EXECUTABLE Doxygen::doxygen IMPORTED_LOCATION)
-        else()
-            message(FATAL_ERROR "DOXYGEN_FOUND was true but Doxygen::doxygen does not exist.")
-        endif()
-
-        if(TARGET Doxygen::dot)
-            get_target_property(DOXYGEN_DOT_EXECUTABLE Doxygen::dot IMPORTED_LOCATION)
-            set(DOXYGEN_DOT_FOUND "TRUE")
-        else()
-            set(DOXYGEN_DOT_FOUND "FALSE")
-        endif()
-    endif()
-endmacro()
-
 #[[
 # Parameters:
 #   - OUT_DIR [optional]: The directory in which the documentation output will be stored. If this parameter is not
@@ -844,16 +826,16 @@ function(nostra_generate_doc)
         find_package(Doxygen OPTIONAL_COMPONENTS dot)
 
         if(DOXYGEN_FOUND)
-            _nostra_generate_doc_forwards_comp_helper()
-
-            nostra_message("Doxygen: Executable was found at ${DOXYGEN_EXECUTABLE}, documentation will be generated.")
+            nostra_message("Doxygen: Executable was found, documentation will be generated.")
 
             # Handle dot usage/configuration
-            if(DOXYGEN_DOT_FOUND)
-                nostra_message("Doxygen: Found dot at ${DOXYGEN_DOT_EXECUTABLE}.")
+            if(TARGET Doxygen::dot)
+                nostra_message("Doxygen: Found dot at ${DOT_EXECUTABLE}.")
+
+                get_target_property(DOT_EXECUTABLE Doxygen::dot IMPORTED_LOCATION)
 
                 set(NOSTRA_CMAKE_HAVE_DOT "YES")
-                set(NOSTRA_CMAKE_DOT_PATH "${DOXYGEN_DOT_EXECUTABLE}")
+                set(NOSTRA_CMAKE_DOT_PATH "${DOT_EXECUTABLE}")
             else()
                 nostra_message("Doxygen: Could not find dot. Graph generation will be omitted.")
 
@@ -882,9 +864,9 @@ function(nostra_generate_doc)
 	    	configure_file("doc/Doxyfile.in" "${NOSTRA_CMAKE_OUT_DIR}/Doxyfile")
 
 	    	add_custom_target(NostraSocketWrapperDoc
-	    		ALL COMMAND "${DOXYGEN_EXECUTABLE}" "${OUTPUT_DIR}/Doxyfile"
+	    		ALL COMMAND Doxygen::doxygen "${OUTPUT_DIR}/Doxyfile"
 	    		WORKING_DIRECTORY "."
-	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}."
+	    		COMMENT "Generating Doxygen documentation for ${PROJECT_NAME}"
 	    		VERBATIM)
 
 	    	install(DIRECTORY "${NOSTRA_CMAKE_OUT_DIR}/html/"
