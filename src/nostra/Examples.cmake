@@ -41,15 +41,15 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
         nostra_print_error("Invalid language ${LANGUAGE}")
     endif()
 
-    set_source_files_properties("examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" PROPERTIES LANGUAGE "${UPPER_LANG}")
+    # Add the default test file to FUNC_ADDITIONAL_SOURCES. This way, they can be handled as one
+    list(APPEND FUNC_ADDITIONAL_SOURCES "${EXAMPLE_NAME}.${LANGUAGE}")
 
-    nostra_prefix_list(FUNC_ADDITIONAL_SOURCES "examples/${EXAMPLE_NAME}.d/")
+    # Properly prefix the additional source files to locate them in test/<test name>.d/src/
+    nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
 
-    foreach(SRC IN LISTS FUNC_ADDITIONAL_SOURCES)
-        set_source_files_properties("${SRC}" PROPERTIES LANGUAGE "${UPPER_LANG}")
-    endforeach()
+    _nostra_set_source_file_language(${LANGUAGE} ${FUNC_ACTUAL_ADD_SOURCES})
 
-    add_executable("${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" "examples/${EXAMPLE_NAME}.d/${EXAMPLE_NAME}.${LANGUAGE}" "${FUNC_ADDITIONAL_SOURCES}")
+    add_executable("${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" "${FUNC_ADDITIONAL_SOURCES}")
 
     target_link_libraries("${PROJECT_PREFIX}.${LANGUAGE}.${EXAMPLE_NAME}" "${FUNC_EXAMPLE_TARGET}")
 
