@@ -32,6 +32,14 @@ add_test(
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_list_functions")
         
+add_test(
+    NAME
+        "ncm.cmake._nostra_check_parameter.wt"
+    COMMAND
+        "cmake" "-P" "_nostra_check_parameter.cmake"
+    WORKING_DIRECTORY
+        "${CMAKE_SOURCE_DIR}/test/nostra_list_functions")
+        
 # TODO: Clean up the following process, if possible, do not rely on platform specific cmd line interpreters
 
 # Choose cmd line interpreter for the command; cmd.exe on Windows, Bourne Shell on Unix. 

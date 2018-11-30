@@ -139,3 +139,46 @@ function(_nostra_set_source_file_language LANGUAGE)
     endforeach()
 endfunction()
 
+#[[
+# Parameters:
+#   - PREFIX: The same prefix that was also passed to cmake_parse_arguments().
+#   - NAME:   The name of the variable (without the prefix).
+#   - REGEX:  The regex that the variable must match.
+#
+# Checks if a variable matches a particular regex.
+#]]
+macro(_nostra_check_parameter_match PREFIX NAME REGEX)
+    if(NOT DEFINED "${PREFIX}_${NAME}")
+        nostra_print_error("${NAME} is required.")
+    else()
+        if(NOT "${${PREFIX}_${NAME}}" MATCHES "${REGEX}")
+            nostra_print_error("${NAME} must match ${REGEX}.")
+        endif()
+    endif()
+endmacro()
+
+#[[
+# Parameters:
+#   - PREFIX: The same prefix that was also passed to cmake_parse_arguments().
+#   - NAME:   The name of the variable (without the prefix).
+#   - ARGN:   A list of the possible values for the variables.
+#
+# Checks if a variable has one of a set of values.
+#]]
+macro(_nostra_check_parameter PREFIX NAME)
+    if(NOT DEFINED "${PREFIX}_${NAME}")
+        nostra_print_error("${NAME} is required.")
+    else()
+        if(NOT "${ARGN}" STREQUAL "")
+            foreach(VAL IN LISTS ARGN)
+                if("${${PREFIX}_${NAME}}" STREQUAL "${VAL}")
+                    set(FOUND TRUE)
+                endif()
+            endforeach()
+
+            if(NOT FOUND)
+                nostra_print_error("${NAME} must have one of these values: ${ARGN}.")
+            endif()
+        endif()
+    endif()
+endmacro()

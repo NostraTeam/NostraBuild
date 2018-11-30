@@ -66,6 +66,7 @@ endfunction()
 #   - TEST_TARGET:          The target that will be tested, i.e. the target that will be linked against.
 #   - SHOULD_FAIL:          If TRUE, the test is expected to fail.
 #   - ADDITIONAL_SOURCES:   Additional source files. Relative to /test/<test dir>/src.
+#   - NUMBER:               The number of the test. A positve integer > 0.
 #
 # A helper for both ex and bu tests, that does checks and sets variables that are shared by all execution types.
 # This helper does:
@@ -75,32 +76,19 @@ endfunction()
 # - set the language of that list
 #]]
 macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
-    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET;TEST_TYPE;TEST_NAME" "ADDITIONAL_SOURCES" "${ARGN}")
+    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET;TEST_TYPE;TEST_NAME;NUMBER" "ADDITIONAL_SOURCES" "${ARGN}")
 
     _nostra_check_parameters()
     _nostra_check_if_lib(${FUNC_TEST_TARGET})
     _nostra_check_if_nostra_project()
 
-    _nostra_get_original_language(ORIGINAL_LANGUAGE ${LANGUAGE})
-
-    if(NOT DEFINED FUNC_TEST_NAME)
-        nostra_print_error("TEST_NAME is required.")
-    endif()
-
-    if(NOT DEFINED FUNC_TEST_TYPE)
-        nostra_print_error("TEST_TYPE is required.")
-    endif()
-
-    if(NOT ("${FUNC_TEST_TYPE}" STREQUAL "wt" OR "${FUNC_TEST_TYPE}" STREQUAL "bt"))
-        nostra_print_error("Invalid test type (only wt and bt are allowed).")
-    endif()
+    _nostra_check_parameter("FUNC" "TEST_NAME")
+    _nostra_check_parameter("FUNC" "TEST_TYPE" "wt" "bt")
+    _nostra_check_parameter("FUNC" "TEST_TARGET")
+    _nostra_check_parameter_match("FUNC" "NUMBER" "^[1-9][0-9]*$")
 
     if(NOT ("${EXEC_TYPE}" STREQUAL "bu" OR "${EXEC_TYPE}" STREQUAL "ex"))
         nostra_print_error("Invalid execution type (only bu and ex are allowed).")
-    endif()
-
-    if(NOT DEFINED FUNC_TEST_TARGET)
-        nostra_print_error("parameter TEST_TARGET is required")
     endif()
 
     if(FUNC_SHOULD_FAIL)
@@ -109,9 +97,11 @@ macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
         set(SUCCESS_REQUIREMENT "s")
     endif()
 
+    _nostra_get_original_language(ORIGINAL_LANGUAGE ${LANGUAGE})
+
     # The name of the test executable
-    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.${EXEC_TYPE}.${SUCCESS_REQUIREMENT}.${FUNC_TEST_NAME}.${FUNC_TEST_TYPE}")
-    set(DIR_NAME "test/${PROJECT_PREFIX}.${ORIGINAL_LANGUAGE}.${EXEC_TYPE}.${SUCCESS_REQUIREMENT}.${FUNC_TEST_NAME}.${FUNC_TEST_TYPE}.d")
+    set(TARGET_NAME "${PROJECT_PREFIX}.${LANGUAGE}.${EXEC_TYPE}.${SUCCESS_REQUIREMENT}.${FUNC_TEST_NAME}.${FUNC_TEST_TYPE}.${FUNC_NUMBER}")
+    set(DIR_NAME "test/${PROJECT_PREFIX}.${ORIGINAL_LANGUAGE}.${EXEC_TYPE}.${SUCCESS_REQUIREMENT}.${FUNC_TEST_NAME}.${FUNC_TEST_TYPE}.${FUNC_NUMBER}.d")
 
     _nostra_print_debug("============================")
     _nostra_print_debug("Creating new test")
@@ -214,6 +204,7 @@ endfunction()
 # nostra_add_c_test(TEST_NAME <name> 
 #                   TEST_TYPE <type> 
 #                   TEST_TARGET <target> 
+#                   NUMBER <number>
 #                   [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
 #                   [TEST_CPP] 
 #                   [NOCOPY]
@@ -233,6 +224,9 @@ endfunction()
 # TEST_TARGET:
 #   The target to test, i.e. the target that the test executable will be linked aginst.
 # 
+# NUMBER:
+#   The number of the test. Must be a positve integer that is greater than zero (0).
+#
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.c. The paths that are passed are relative to 
 #   /test/<test directory>/src.
@@ -285,6 +279,7 @@ endfunction()
 # nostra_add_cpp_test(TEST_NAME <name> 
 #                     TEST_TYPE <type> 
 #                     TEST_TARGET <target> 
+#                     NUMBER <number>
 #                     [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
 #                     [NOCOPY]
 #                     [SHOULD_FAIL])
@@ -303,6 +298,9 @@ endfunction()
 # TEST_TARGET:
 #   The target to test, i.e. the target that the test executable will be linked aginst.
 # 
+# NUMBER:
+#   The number of the test. Must be a positve integer that is greater than zero (0).
+#
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.cpp. The paths that are passed are relative to 
 #   /test/<test directory>/src.
@@ -329,8 +327,7 @@ endfunction()
 #
 # Additionally, the tests added by this function will only be added and build if BUILD_TESTING is TRUE.
 #]=]
-# TOOD add links to nostra convention
-# TODO Add support for test numbers
+# TODO add links to nostra convention
 function(nostra_add_cpp_test)
     if(BUILD_TESTING)
         _nostra_add_ex_test_helper("cpp" "${ARGN}")
@@ -384,6 +381,7 @@ endfunction()
 # nostra_add_c_compile_test(TEST_NAME <name> 
 #                           TEST_TYPE <type> 
 #                           TEST_TARGET <target> 
+#                           NUMBER <number>
 #                           [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
 #                           [NOCOPY]
 #                           [SHOULD_FAIL])
@@ -403,6 +401,9 @@ endfunction()
 # TEST_TARGET:
 #   The target to test, i.e. the target that the test executable will be linked aginst.
 # 
+# NUMBER:
+#   The number of the test. Must be a positve integer that is greater than zero (0).
+#
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.c. The paths that are passed are relative to 
 #   /test/<test directory>/src.
@@ -431,6 +432,7 @@ endfunction()
 # nostra_add_cpp_compile_test(TEST_NAME <name> 
 #                             TEST_TYPE <type> 
 #                             TEST_TARGET <target> 
+#                             NUMBER <number>
 #                             [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
 #                             [NOCOPY]
 #                             [SHOULD_FAIL])
@@ -450,6 +452,9 @@ endfunction()
 # TEST_TARGET:
 #   The target to test, i.e. the target that the test executable will be linked aginst.
 # 
+# NUMBER:
+#   The number of the test. Must be a positve integer that is greater than zero (0).
+#
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.cpp. The paths that are passed are relative to 
 #   /test/<test directory>/src.

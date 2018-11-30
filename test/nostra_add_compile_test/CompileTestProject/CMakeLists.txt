@@ -30,14 +30,17 @@ nostra_add_c_compile_test(TEST_NAME "component"
     TEST_TYPE
         "wt"
     TEST_TARGET 
-        "Nostra::CTestLib")
-
+        "Nostra::CTestLib"
+    NUMBER
+        1)
 
 nostra_add_c_compile_test(TEST_NAME "component" 
     TEST_TYPE
         "wt"
     TEST_TARGET 
         "Nostra::CTestLib" 
+        NUMBER
+            1
     SHOULD_FAIL)
 
 nostra_add_cpp_compile_test(TEST_NAME "component" 
@@ -46,7 +49,9 @@ nostra_add_cpp_compile_test(TEST_NAME "component"
     TEST_TARGET 
         "Nostra::CTestLib" 
     ADDITIONAL_SOURCES 
-        "source.cpp")
+        "source.cpp"
+    NUMBER
+        1)
 
     
 nostra_add_cpp_compile_test(TEST_NAME "component" 
@@ -56,4 +61,6 @@ nostra_add_cpp_compile_test(TEST_NAME "component"
         "Nostra::CTestLib" 
     ADDITIONAL_SOURCES 
         "source.cpp"
+    NUMBER
+        1
     SHOULD_FAIL)

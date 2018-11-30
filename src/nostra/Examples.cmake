@@ -26,12 +26,10 @@ function(_nostra_add_example_helper EXAMPLE_NAME LANGUAGE)
 
     set(EXAMPLE_NAME "${EXAMPLE_NAME}.ex") # Added .ex as suffix to the example name
 
-    if(NOT DEFINED FUNC_EXAMPLE_TARGET)
-        nostra_print_error("parameter EXAMPLE_TARGET is required")
-    endif()
-
     _nostra_check_parameters()
     _nostra_check_if_nostra_project()
+    _nostra_check_parameter("FUNC" "EXAMPLES_TARGET")
+    _nostra_check_if_lib("${FUNC_EXAMPLE_TARGET}")
 
     if(${LANGUAGE} STREQUAL "c")
         set(UPPER_LANG "C")
