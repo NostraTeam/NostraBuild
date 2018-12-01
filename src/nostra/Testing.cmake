@@ -117,7 +117,7 @@ macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
     list(APPEND FUNC_ADDITIONAL_SOURCES "test.${ORIGINAL_LANGUAGE}")
 
     # Add TEST_TARGET to FUNC_ADDITIONAL_TARGETS. This way, they can be handled as one
-    list(APPEND FUNC_ADDITIONAL_TARGETS "${TEST_TARGET}")
+    list(APPEND FUNC_ADDITIONAL_TARGETS "${FUNC_TEST_TARGET}")
 
     # Properly prefix the additional source files to locate them in test/<test name>.d/src/
     nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
@@ -364,7 +364,6 @@ endfunction()
 #
 # This function can only be called, if nostra_project() was called first.
 #]]
-# TODO: Add required resource files for tests
 function(_nostra_add_bu_test_helper LANGUAGE)
     _nostra_add_any_test_helper("${LANGUAGE}" "bu" "${ARGN}")    
 
