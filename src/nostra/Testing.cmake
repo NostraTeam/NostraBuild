@@ -66,6 +66,7 @@ endfunction()
 #   - TEST_TARGET:          The target that will be tested, i.e. the target that will be linked against.
 #   - SHOULD_FAIL:          If TRUE, the test is expected to fail.
 #   - ADDITIONAL_SOURCES:   Additional source files. Relative to /test/<test dir>/src.
+#   - ADDITIONAL_TARGETS [optional]: Additional targets required aside from TEST_TARGET.
 #   - NUMBER:               The number of the test. A positve integer > 0.
 #
 # A helper for both ex and bu tests, that does checks and sets variables that are shared by all execution types.
@@ -76,7 +77,7 @@ endfunction()
 # - set the language of that list
 #]]
 macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
-    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET;TEST_TYPE;TEST_NAME;NUMBER" "ADDITIONAL_SOURCES" "${ARGN}")
+    cmake_parse_arguments(FUNC "SHOULD_FAIL" "TEST_TARGET;TEST_TYPE;TEST_NAME;NUMBER" "ADDITIONAL_SOURCES;ADDITIONAL_TARGETS" "${ARGN}")
 
     _nostra_check_parameters()
     _nostra_check_if_lib(${FUNC_TEST_TARGET})
@@ -114,6 +115,9 @@ macro(_nostra_add_any_test_helper LANGUAGE EXEC_TYPE)
 
     # Add the default test file to FUNC_ADDITIONAL_SOURCES. This way, they can be handled as one
     list(APPEND FUNC_ADDITIONAL_SOURCES "test.${ORIGINAL_LANGUAGE}")
+
+    # Add TEST_TARGET to FUNC_ADDITIONAL_TARGETS. This way, they can be handled as one
+    list(APPEND FUNC_ADDITIONAL_TARGETS "${TEST_TARGET}")
 
     # Properly prefix the additional source files to locate them in test/<test name>.d/src/
     nostra_prefix_list(FUNC_ACTUAL_ADD_SOURCES "${DIR_NAME}/src/" "${FUNC_ADDITIONAL_SOURCES}")
@@ -170,10 +174,11 @@ function(_nostra_add_ex_test_helper LANGUAGE)
 
     add_executable("${TARGET_NAME}" "${FUNC_ACTUAL_ADD_SOURCES}")
 
+    # Add dependency libraries
     target_link_libraries("${TARGET_NAME}" 
-        PRIVATE
-            "${FUNC_TEST_TARGET}")
-
+            PRIVATE
+               "${FUNC_ADDITIONAL_TARGETS}")
+    
     install(TARGETS "${TARGET_NAME}" EXPORT "${PROJECT_EXPORT}"
         RUNTIME 
             DESTINATION "${DIR_NAME}"
@@ -206,6 +211,7 @@ endfunction()
 #                   TEST_TARGET <target> 
 #                   NUMBER <number>
 #                   [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
+#                   [ADDITIONAL_TARGETS [target1 [target2 [target3 ...]]]]
 #                   [TEST_CPP] 
 #                   [NOCOPY]
 #                   [SHOULD_FAIL])
@@ -230,6 +236,9 @@ endfunction()
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.c. The paths that are passed are relative to 
 #   /test/<test directory>/src.
+#
+# ADDITIONAL_TARGETS:
+#   Additional targets that are required aside from TEST_TARGET.
 #
 # TEST_CPP:
 #   If set, the entire test will be added a second time, but as C++ test (the language in the full test name will be
@@ -281,6 +290,7 @@ endfunction()
 #                     TEST_TARGET <target> 
 #                     NUMBER <number>
 #                     [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
+#                     [ADDITIONAL_TARGETS [target1 [target2 [target3 ...]]]]
 #                     [NOCOPY]
 #                     [SHOULD_FAIL])
 #
@@ -304,6 +314,9 @@ endfunction()
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.cpp. The paths that are passed are relative to 
 #   /test/<test directory>/src.
+#
+# ADDITIONAL_TARGETS:
+#   Additional targets that are required aside from TEST_TARGET.
 #
 # NOCOPY:
 #   If set, the files in /test/<test directory>/resouces will not be copied into the build directory. Note that, if
@@ -342,6 +355,7 @@ endfunction()
 #   - TEST_TARGET:                   The target to test, i.e. the target to link against. 
 #   - SHOULD_FAIL [flag, optional]:  If set, the test will succeed if the compilation fails.
 #   - ADDITIONAL_SOURCES [optional]: Additional source files required aside from the default one.
+#   - ADDITIONAL_TARGETS [optional]: Additional targets required aside from TEST_TARGET.
 #
 # A helper for nostra_add_c_compile_test() and nostra_add_cpp_compile_test().
 #
@@ -350,7 +364,6 @@ endfunction()
 #
 # This function can only be called, if nostra_project() was called first.
 #]]
-# TODO: Add support for multiple, additional targets
 # TODO: Add required resource files for tests
 function(_nostra_add_bu_test_helper LANGUAGE)
     _nostra_add_any_test_helper("${LANGUAGE}" "bu" "${ARGN}")    
@@ -362,10 +375,11 @@ function(_nostra_add_bu_test_helper LANGUAGE)
         "${DIR_NAME}/src/test.${LANGUAGE}" # default source file
         "${FUNC_ACTUAL_ADD_SOURCES}")
 
+    # Add dependency libraries
     target_link_libraries("${TARGET_NAME}" 
-        PRIVATE
-            "${FUNC_TEST_TARGET}")
-
+            PRIVATE
+               "${FUNC_ADDITIONAL_TARGETS}")
+    
     # Add the actual test to CTest
     add_test(
         NAME 
@@ -383,6 +397,7 @@ endfunction()
 #                           TEST_TARGET <target> 
 #                           NUMBER <number>
 #                           [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
+#                           [ADDITIONAL_TARGETS [target1 [target2 [target3 ...]]]]
 #                           [NOCOPY]
 #                           [SHOULD_FAIL])
 #
@@ -407,6 +422,9 @@ endfunction()
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.c. The paths that are passed are relative to 
 #   /test/<test directory>/src.
+#
+# ADDITIONAL_TARGETS:
+#   Additional targets that are required aside from TEST_TARGET.
 #
 # SHOULD_FAIL:
 #   If set, the test counts as successful if the build fails. Otherwise, the test counts as successful if the build 
@@ -434,6 +452,7 @@ endfunction()
 #                             TEST_TARGET <target> 
 #                             NUMBER <number>
 #                             [ADDITIONAL_SOURCES [source1 [source2 [source3 ...]]]] 
+#                             [ADDITIONAL_TARGETS [target1 [target2 [target3 ...]]]]
 #                             [NOCOPY]
 #                             [SHOULD_FAIL])
 #
@@ -458,6 +477,9 @@ endfunction()
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.cpp. The paths that are passed are relative to 
 #   /test/<test directory>/src.
+#
+# ADDITIONAL_TARGETS:
+#   Additional targets that are required aside from TEST_TARGET.
 #
 # SHOULD_FAIL:
 #   If set, the test counts as successful if the build fails. Otherwise, the test counts as successful if the build 
