@@ -223,3 +223,25 @@ function(nostra_add_library NAME)
         INTERFACE
             "NOSTRA_HAS_${PROJECT_PREFIX}")
 endfunction()
+
+#[=[
+# Adds clang-tidy to the current package based on whether a .clang-tidy file is in the root directory of the package.
+#
+# This function does NOT need to be called by a user, it always gets automatically called when the NostraBuild package
+# is included in a CMakeLists.txt file.
+#]=]
+function(nostra_clang_tidy)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/.clang-tidy")
+        # Set the CMAKE_<lang>_CLANG_TIDY globally
+        # CACHE for global access
+        # INTERNAL makes it invisible in ccmake and cmake-gui
+        # FORCE forces an override each run of CMake
+        set(CMAKE_CXX_CLANG_TIDY "clang-tidy" CACHE INTERNAL "clang-tidy for C++" FORCE)
+        set(CMAKE_C_CLANG_TIDY "clang-tidy" CACHE INTERNAL "clang-tidy for C" FORCE)
+    else()
+        unset(CMAKE_CXX_CLANG_TIDY CACHE)
+        unset(CMAKE_C_CLANG_TIDY CACHE)
+    endif()
+endfunction()
+
+nostra_clang_tidy()
