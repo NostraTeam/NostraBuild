@@ -129,7 +129,7 @@ ask_for_config_h()
     if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "N" ] ||
        [ "${USE_CONFIG_H}" = "y" ] || [ "${USE_CONFIG_H}" = "n" ]
     then
-        if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "Y" ]
+        if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "y" ]
         then
             USE_CONFIG_H="ON"
             printf "Using config.h file.\n"
@@ -154,15 +154,12 @@ generate_files()
 
     cmake -DNOSTRA_NAME="${NAME}" -DNOSTRA_PREFIX="${PREFIX}" -DNOSTRA_DESCRIPTION="${DESCRIPTION}" \
     -DNOSTRA_OUT_ROOT="${ROOT_DIR}" -DNOSTRA_HAVE_CLANG_FORMAT="${USE_CLANG_FORMAT}" \
-    -DNOSTRA_HAVE_CLANG_TIDY="${USE_CLANG_TIDY}" -DNOSTRA_HAVE_CONFIG_H="${USE_CLANG_CONFIG_H}" \
+    -DNOSTRA_HAVE_CLANG_TIDY="${USE_CLANG_TIDY}" -DNOSTRA_HAVE_CONFIG_H="${USE_CONFIG_H}" \
     -P "${SCRIPTPATH}/../nostra/CreateProject.cmake" > /dev/null
 
     printf "\n"
 
-    if [ "$?" -ne "0" ]
-    then
-        return 1
-    fi
+    return $?
 }
 
 init()
@@ -189,9 +186,7 @@ init()
     print_vertical_line
     printf "The interactive dialog is now over. The package files will now be generated.\n"
 
-    generate_files
-
-    if [ "$?" -eq "0" ]
+    if generate_files
     then
         printf "Files were generated.\n"
     else
