@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 include("${CMAKE_CURRENT_LIST_DIR}/PrivateHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/Utility.cmake")
 
-# Get the directory of this file; this needs to be outside of a function
+# Get the directory of this file; this needs to be outside of a function b/c CMAKE_CURRENT_LIST_DIR evaluates to
+# the calling file inside of a function.
 set(_NOSTRA_CMAKE_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 # Helper for nostra_generate_export_header(). See doc of that function.
@@ -67,6 +68,7 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
         set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
+    message("::${_NOSTRA_CMAKE_LIST_DIR}")
     configure_file("${_NOSTRA_CMAKE_LIST_DIR}/../cmake/export.h.in" "${OUT_DIR}/export.h" @ONLY)
 endfunction()
 

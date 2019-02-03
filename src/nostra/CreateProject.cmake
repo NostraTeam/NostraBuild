@@ -62,7 +62,6 @@ endif()
 # Variables that are required for configuring cmake/in/cmake/export.h.in
 # These variables are required, because they are not supposed to be configured at this point, but instead they are
 # meant to be configured by the project itself later. 
-# This works, because at this point, the variables will be replaced 
 set(PROJECT_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@")
 set(PROJECT_VERSION_MINOR "@PROJECT_VERSION_MINOR@")
 set(PROJECT_VERSION_PATCH "@PROJECT_VERSION_PATCH@")
