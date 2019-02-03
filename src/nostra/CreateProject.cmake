@@ -1,4 +1,6 @@
 
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
 set(NOSTRA_NAME "" CACHE STRING "The name of the project. Should be in upper camel case and without \"Nostra\" at the \
 beginning (e.g. Utils for NostraUtils).")
 set(NOSTRA_PREFIX "" CACHE STRING "The prefix of the project, e.g. nou for NostraUtils.")
