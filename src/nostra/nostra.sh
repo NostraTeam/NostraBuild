@@ -18,36 +18,53 @@ print_vertical_line()
     printf "\n"
 }
 
+var_does_not_match()
+{
+    if [ "$#" -ne "2" ]
+    then
+        printf "var_does_not_match() was used incorrectly."
+    fi
+
+    GREP_OUTPUT=$(echo "$1" | grep "$2" 2> /dev/null)
+
+    if [ "${GREP_OUTPUT}" != "" ]
+    then
+        return 1
+    fi
+}
+
 ask_for_name()
 {
     printf "What is the name of the package (without a leading 'Nostra')?\n"
+    printf "The name can consist only of letters.\n"
     printf "==> "
     read NAME
 
-    if [ "${NAME}" = "" ]
+    if var_does_not_match "${NAME}" "^[a-zA-Z]\{1,\}$"
     then
-        printf "The name can not be empty. Please choose a different one.\n"
+        printf "The name has the wrong format.\n"
         ask_for_name
+    else
+        printf "The name is '${NAME}'. The final name of the package will be 'Nostra${NAME}'.\n"
     fi
-
-    printf "The name is '${NAME}'. The final name of the package will be 'Nostra${NAME}'.\n"
 }
 
 ask_for_prefix()
 {
     printf "What is the prefix of the package? The prefix is a short, optimally three letter\n"
-    printf "long abbreviation of the package name. For example, the prefix of the package\n"
-    printf "'Nostra Utils' is 'nou'.\n"
+    printf "long abbreviation of the package name.\n"
+    printf "Prefixes consist of only lowercase letters. They have a minimum lentgth of\n"
+    printf "three (3). For example, the prefix of the package 'Nostra Utils' is 'nou'.\n"
     printf "==> "
     read PREFIX
 
-    if [ "${PREFIX}" = "" ]
+    if var_does_not_match "${PREFIX}" "^[a-z]\{3,\}$"
     then
-        printf "The prefix can not be empty. Please choose a different one.\n"
+        printf "The prefix has the wrong format.\n"
         ask_for_prefix
+    else
+        printf "The prefix is '${PREFIX}'.\n"
     fi
-
-    printf "The prefix is '${PREFIX}'.\n"
 }
 
 ask_for_description()
@@ -59,10 +76,32 @@ ask_for_description()
     printf "The description is '${DESCRIPTION}'.\n"
 }
 
+ask_for_version()
+{
+    printf "Please give the initial version of the package. The version needs to be\n"
+    printf "given in in the format <major>.<minor>.<patch>.<tweak>, e.g. 1.0.2.0.\n"
+    printf "Entering an empty string will set the initial version to 1.0.0.0.\n"
+    printf "==> "
+    read VERSION
+
+    if [ "${VERSION}" = "" ]
+    then
+        VERSION="1.0.0.0"
+    fi
+
+    if var_does_not_match "${VERSION}" "^[0-9][0-9]*\(\.[0-9][0-9]*\)\{0,3\}$"
+    then
+        printf "The version format is incorrect.\n"
+        ask_for_version
+    else
+        printf "The initial version is '${VERSION}'.\n"
+    fi
+}
+
 ask_for_root_dir()
 {
-    printf "Where should the gererated files be placed? Entering an empty string will place\n"
-    printf "the files in a subdirectory of the current working directory.\n"
+    printf "Where should the gererated files be placed? Entering an empty string will\n"
+    printf "place the files in a subdirectory of the current working directory.\n"
     printf "==> "
     read ROOT_DIR
 
@@ -155,7 +194,7 @@ generate_files()
     cmake -DNOSTRA_NAME="${NAME}" -DNOSTRA_PREFIX="${PREFIX}" -DNOSTRA_DESCRIPTION="${DESCRIPTION}" \
     -DNOSTRA_OUT_ROOT="${ROOT_DIR}" -DNOSTRA_HAVE_CLANG_FORMAT="${USE_CLANG_FORMAT}" \
     -DNOSTRA_HAVE_CLANG_TIDY="${USE_CLANG_TIDY}" -DNOSTRA_HAVE_CONFIG_H="${USE_CONFIG_H}" \
-    -P "${SCRIPTPATH}/../nostra/CreateProject.cmake" > /dev/null
+    -DNOSTRA_INITIAL_VERSION="${VERSION}" -P "${SCRIPTPATH}/../nostra/CreateProject.cmake" > /dev/null
 
     printf "\n"
 
@@ -175,6 +214,8 @@ init()
     ask_for_prefix
     printf "\n"
     ask_for_description
+    printf "\n"
+    ask_for_version
     printf "\n"
     ask_for_root_dir
     printf "\n"
