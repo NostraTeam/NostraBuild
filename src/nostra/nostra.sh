@@ -83,7 +83,7 @@ ask_for_clang_format()
     if [ "${USE_CLANG_FORMAT}" = "Y" ] || [ "${USE_CLANG_FORMAT}" = "N" ] ||
        [ "${USE_CLANG_FORMAT}" = "y" ] || [ "${USE_CLANG_FORMAT}" = "n" ]
     then
-        if [ "${USE_CLANG_FORMAT}" = "Y" ]
+        if [ "${USE_CLANG_FORMAT}" = "Y" ] || [ "${USE_CLANG_FORMAT}" = "y" ]
         then
             USE_CLANG_FORMAT="ON"
             printf "Using clang-format.\n"
@@ -106,7 +106,7 @@ ask_for_clang_tidy()
     if [ "${USE_CLANG_TIDY}" = "Y" ] || [ "${USE_CLANG_TIDY}" = "N" ] ||
        [ "${USE_CLANG_TIDY}" = "y" ] || [ "${USE_CLANG_TIDY}" = "n" ]
     then
-        if [ "${USE_CLANG_TIDY}" = "Y" ]
+        if [ "${USE_CLANG_TIDY}" = "Y" ] || [ "${USE_CLANG_TIDY}" = "y" ]
         then
             USE_CLANG_TIDY="ON"
             printf "Using clang-tidy.\n"
@@ -129,7 +129,7 @@ ask_for_config_h()
     if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "N" ] ||
        [ "${USE_CONFIG_H}" = "y" ] || [ "${USE_CONFIG_H}" = "n" ]
     then
-        if [ "${USE_CONFIG_H}" = "Y" ]
+        if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "Y" ]
         then
             USE_CONFIG_H="ON"
             printf "Using config.h file.\n"
