@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared libraries." OFF)
 
+project(NostraCMake
+	VERSION 1.0.0.0
+	DESCRIPTION "CMake module(s) and script(s) to support the Nostra Project."
+	LANGUAGES NONE)
+
 include("src/nostra/Nostra.cmake")
 
 include(CTest)
@@ -148,3 +153,95 @@ add_test(
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
 
 set_tests_properties("ncm.cmake.general_function_tests_fail.5" PROPERTIES WILL_FAIL "ON")  
+
+#[=[
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(UNIX)
+        set (CMAKE_INSTALL_PREFIX "/opt/nostracmake-${PROJECT_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
+    elseif(WIN32)
+        set (CMAKE_INSTALL_PREFIX "C:/Program Files/nostracmake-${PROJECT_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
+endif()#]=]
+
+install(
+    FILES 
+        "src/nostra/CreateProject.cmake" 
+        "src/nostra/Documentation.cmake" 
+        "src/nostra/Examples.cmake" 
+        "src/nostra/ExportHeader.cmake" 
+        "src/nostra/Nostra.cmake" 
+        "src/nostra/PrivateHelpers.cmake" 
+        "src/nostra/Testing.cmake" 
+        "src/nostra/Utility.cmake"
+    DESTINATION
+        "nostra"
+    COMPONENT
+        "Required")
+
+install(
+    FILES
+        "cmake/in/cmake/Config.cmake.in"
+        "cmake/in/cmake/config.h.in"
+        "cmake/in/cmake/CPackConfig.cmake.in"
+        "cmake/in/cmake/Targets.cmake.in"
+        "cmake/in/cmake/welcome.txt.in"
+    DESTINATION
+        "cmake/in/cmake"
+    COMPONENT
+        "Required")
+
+install(
+    FILES
+        "cmake/in/doc/additional_doc.dox.in"
+        "cmake/in/doc/Doxyfile.in"
+        "cmake/in/doc/DoxygenLayout.xml.in"
+        "cmake/in/doc/style.css.in"
+    DESTINATION
+        "cmake/in/doc"
+    COMPONENT
+        "Required")
+        
+install(
+    FILES
+        "cmake/in/.clang-format.in"
+        "cmake/in/.clang-tidy.in"
+        "cmake/in/.gitattributes.in"
+        "cmake/in/.gitignore.in"
+        "cmake/in/CMakeLists.txt.in"
+        "cmake/in/LICENSE.in"
+        "cmake/in/README.md.in"
+    DESTINATION
+        "cmake/in"
+    COMPONENT
+        "Required")
+
+install(
+    FILES
+        "cmake/export.h.in"
+    DESTINATION
+        "cmake/"
+    COMPONENT
+        "Required")
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file("${CMAKE_BINARY_DIR}/NostraSocketWrapperConfigVersion.cmake"
+    VERSION "${PROJECT_VERSION}"
+    COMPATIBILITY AnyNewerVersion)
+     
+install(
+    FILES
+        "${CMAKE_BINARY_DIR}/NostraSocketWrapperConfigVersion.cmake"
+    DESTINATION
+        "share/NostraCMake"
+    COMPONENT
+        "Required")
+
+install(
+    FILES
+        "${CMAKE_SOURCE_DIR}/cmake/NostraCMakeConfig.cmake"
+    DESTINATION
+        "share/NostraCMake"
+    COMPONENT
+        "Required")
+
+include(CPack)
