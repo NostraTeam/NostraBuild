@@ -8,7 +8,7 @@ nostra_project("@NOSTRA_NAME_CAMEL@" "@NOSTRA_PREFIX_LOWER@"
     LANGUAGES   "@NOSTRA_LANGUAGES@"
     @NOSTRA_LOGO_ACTUAL@)
 
-set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "") # Source files will be added here
+set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "") # Source files should be added here
 
 nostra_add_library(@NOSTRA_NAME@ ${@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES})
 add_library(Nostra::@NOSTRA_NAME@ ALIAS @NOSTRA_NAME@)
@@ -51,7 +51,7 @@ elseif("${NOSTRA_LANGUAGE_ID}" STREQUAL "GNU")
             "-Wpedantic"
             "-fPIC")
 else()
-    message(WARNING "The compiler with the ID ${NOSTRA_LANGUAGE_ID} may not be supported.")
+    message(WARNING "The compiler with the ID '${NOSTRA_LANGUAGE_ID}' may not be supported.")
 endif()
   
 nostra_generate_export_header(@NOSTRA_NAME@ OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/nostra/@NOSTRA_NAME_LOWER@")
@@ -92,13 +92,13 @@ include(CTest)
 enable_testing()
 
 # Tests start
-
+    # Add tests here...
 # Tests end
 
 
 
 # Examples start
-
+    # Add examples here...
 # Examples end
 
 
