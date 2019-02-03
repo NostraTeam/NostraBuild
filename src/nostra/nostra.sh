@@ -18,6 +18,21 @@ print_vertical_line()
     printf "\n"
 }
 
+var_matches()
+{
+    if [ "$#" -ne "2" ]
+    then
+        printf "var_matches() was used incorrectly."
+    fi
+
+    GREP_OUTPUT=$(echo "$1" | grep "$2" 2> /dev/null)
+
+    if [ "${GREP_OUTPUT}" = "" ]
+    then
+        return 1
+    fi
+}
+
 var_does_not_match()
 {
     if [ "$#" -ne "2" ]
@@ -25,9 +40,8 @@ var_does_not_match()
         printf "var_does_not_match() was used incorrectly."
     fi
 
-    GREP_OUTPUT=$(echo "$1" | grep "$2" 2> /dev/null)
-
-    if [ "${GREP_OUTPUT}" != "" ]
+    # Invert the result of var_matches()
+    if var_matches "$1" "$2"
     then
         return 1
     fi
@@ -94,6 +108,29 @@ ask_for_version()
         printf "The version format is incorrect.\n"
         ask_for_version
     else
+        #Format: x ; extends to x.0.0.0
+        if var_matches "${VERSION}" "^[0-9][0-9]*$"
+        then
+            VERSION="${VERSION}.0.0.0"
+            printf "1\n"
+        else
+            #Format: x.y ; extends to x.y.0.0
+            if var_matches "${VERSION}" "^[0-9][0-9]*\.[0-9][0-9]*$"
+            then
+                VERSION="${VERSION}.0.0"
+            printf "2\n"
+            else
+                #Format: x.y.z ; extends to x.y.z.0
+                if var_matches "${VERSION}" "^[0-9][0-9]\.[0-9][0-9]*\.[0-9][0-9]*$"
+                then
+                    VERSION="${VERSION}.0"
+                    printf "3\n"
+                else
+                    printf "4\n"
+                fi
+            fi
+        fi
+
         printf "The initial version is '${VERSION}'.\n"
     fi
 }
