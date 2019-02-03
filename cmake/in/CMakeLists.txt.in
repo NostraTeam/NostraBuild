@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 #list(APPEND CMAKE_MODULE_PATH "~/.nostra/NostraCMake/src")
 list(APPEND CMAKE_MODULE_PATH "~/Documents/Repos/NostraCMake/src")
