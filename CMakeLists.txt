@@ -4,7 +4,7 @@ option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared 
 
 project(NostraBuild
 	VERSION 1.0.0.0
-	DESCRIPTION "CMake module(s) and script(s) to support the Nostra Project."
+	DESCRIPTION "CMake module(s) and script(s) that are used to build Nostra packages."
 	LANGUAGES NONE)
 
 include("src/nostra/Nostra.cmake")
@@ -214,6 +214,25 @@ install(
     COMPONENT
         "Required")
 
+if(UNIX)
+    install(
+        FILES
+            "src/nostra/nostra.sh"
+        DESTINATION
+            "bin"
+        PERMISSIONS
+            OWNER_WRITE 
+            OWNER_READ 
+            OWNER_EXECUTE 
+            GROUP_READ
+            GROUP_EXECUTE
+            WORLD_READ
+            WORLD_EXECUTE
+        RENAME
+            "nostra"
+    )
+endif()
+
 include(CMakePackageConfigHelpers)
 
 write_basic_package_version_file("${CMAKE_BINARY_DIR}/NostraSocketWrapperConfigVersion.cmake"
@@ -235,5 +254,8 @@ install(
         "share/NostraBuild"
     COMPONENT
         "Required")
+
+configure_file("cmake/CPackConfig.cmake.in" "cmake/CPackConfig.cmake" @ONLY)
+include("${CMAKE_BINARY_DIR}/cmake/CPackConfig.cmake")
 
 include(CPack)
