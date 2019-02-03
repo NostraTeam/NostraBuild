@@ -44,7 +44,7 @@ add_test(
 
 # Choose cmd line interpreter for the command; cmd.exe on Windows, Bourne Shell on Unix. 
 if(WIN32)
-    set(NOSTRA_CMD_INTERPRETER "cmd.exe" "/C")
+    set(NOSTRA_CMAKE_CTEST_COMMAND "cmd.exe" "/C")
 else()
     set(NOSTRA_CMAKE_CTEST_COMMAND "sh" "-c")
 endif()
