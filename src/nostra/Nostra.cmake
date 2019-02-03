@@ -10,7 +10,7 @@ function(_nostra_include_file FNAME)
     if(EXISTS "${_NOSTRA_CMAKE_LIST_DIR}/../nostra/${FNAME}")
         include("${_NOSTRA_CMAKE_LIST_DIR}/../nostra/${FNAME}")
     else()
-        message(FATAL_ERROR "The file nostra/${FNAME} could not be found. Was NostraCMake not properly installed?")
+        message(FATAL_ERROR "The file nostra/${FNAME} could not be found. Was NostraBuild not properly installed?")
     endif()
 endfunction()
 

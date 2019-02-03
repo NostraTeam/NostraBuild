@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
 option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared libraries." OFF)
 
-project(NostraCMake
+project(NostraBuild
 	VERSION 1.0.0.0
 	DESCRIPTION "CMake module(s) and script(s) to support the Nostra Project."
 	LANGUAGES NONE)
@@ -154,14 +154,6 @@ add_test(
 
 set_tests_properties("ncm.cmake.general_function_tests_fail.5" PROPERTIES WILL_FAIL "ON")  
 
-#[=[
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    if(UNIX)
-        set (CMAKE_INSTALL_PREFIX "/opt/nostracmake-${PROJECT_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
-    elseif(WIN32)
-        set (CMAKE_INSTALL_PREFIX "C:/Program Files/nostracmake-${PROJECT_VERSION}" CACHE PATH "Install path prefix, prepended onto install directories." FORCE )
-endif()#]=]
-
 install(
     FILES 
         "src/nostra/CreateProject.cmake" 
@@ -232,15 +224,15 @@ install(
     FILES
         "${CMAKE_BINARY_DIR}/NostraSocketWrapperConfigVersion.cmake"
     DESTINATION
-        "share/NostraCMake"
+        "share/NostraBuild"
     COMPONENT
         "Required")
 
 install(
     FILES
-        "${CMAKE_SOURCE_DIR}/cmake/NostraCMakeConfig.cmake"
+        "${CMAKE_SOURCE_DIR}/cmake/NostraBuildConfig.cmake"
     DESTINATION
-        "share/NostraCMake"
+        "share/NostraBuild"
     COMPONENT
         "Required")
 

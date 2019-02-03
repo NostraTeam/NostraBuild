@@ -1,7 +1,7 @@
-# NostraSocketWrapper
+# NostraBuild
 CMake module(s) and script(s) to support the Nostra Project.
 
-GitHub: https://github.com/NostraTeam/NostraCMake
+GitHub: https://github.com/NostraTeam/NostraBuild
 
 CMake is developed and maintained by KitWare and not affiliated with the Nostra Project.
 CMake website: https://cmake.org/
