@@ -1,3 +1,4 @@
+# WARNING: CAN NOT BE USED IN BUILD TREE; MUST BE INSTALLED!
 
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
 
@@ -15,8 +16,6 @@ set(NOSTRA_INITIAL_VERSION "1.0.0.0" CACHE STRING "The initial version of the pr
 option(NOSTRA_HAVE_CLANG_FORMAT "If disabled, .clang-format will not be part of the new project tree." ON)
 option(NOSTRA_HAVE_CLANG_TIDY "If disabled, .clang-tidy will not be part of the new project tree." ON)
 option(NOSTRA_HAVE_CONFIG_H "If disabled, no config.h will be used by the new project." ON)
-
-include("${CMAKE_CURRENT_LIST_DIR}/PrivateHelpers.cmake")
 
 set(NOSTRA_NAME_CAMEL "Nostra${NOSTRA_NAME}")
 string(TOUPPER "${NOSTRA_NAME}" NOSTRA_NAME_UPPER)
@@ -52,11 +51,12 @@ function(nostra_copy_file IN_FILE OUT_FILE)
 endfunction()
 
 if("${NOSTRA_NAME}" STREQUAL "")
-    nostra_print_error("NOSTRA_NAME must not be empty.")
+    message(FATAL_ERROR "NOSTRA_NAME must not be empty.")
 endif()
 
+
 if("${NOSTRA_PREFIX}" STREQUAL "")
-    nostra_print_error("NOSTRA_PREFIX must not be empty.")
+message(FATAL_ERROR "NOSTRA_PREFIX must not be empty.")
 endif()
 
 # Variables that are required for configuring cmake/in/cmake/export.h.in
