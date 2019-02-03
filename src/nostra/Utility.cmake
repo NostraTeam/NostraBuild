@@ -186,8 +186,9 @@ endfunction()
 # This function can only be called, if nostra_project() was called first.
 #]]
 function(nostra_print_error STR)
-    _nostra_check_no_parameters()
-    _nostra_check_if_nostra_project()
+    if(NOT DEFINED PROJECT_NAME)
+        set(PROJECT_NAME "<no project>")
+    endif()
 
     message(FATAL_ERROR "${PROJECT_NAME}: ${STR}")
 endfunction()
