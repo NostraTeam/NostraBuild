@@ -68,7 +68,6 @@ function(_nostra_generate_export_header_helper TARGET PREFIX OUT_DIR)
         set(OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
     endif()
 
-    message("::${_NOSTRA_CMAKE_LIST_DIR}")
     configure_file("${_NOSTRA_CMAKE_LIST_DIR}/../cmake/export.h.in" "${OUT_DIR}/export.h" @ONLY)
 endfunction()
 
