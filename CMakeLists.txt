@@ -13,8 +13,6 @@ include(CTest)
 
 enable_testing()
 
-message(STATUS "CMAKE_SYSTEM_PREFIX_PATH: ${CMAKE_SYSTEM_PREFIX_PATH}")
-
 add_test(
     NAME
         "ncm.cmake.nostra_prefix_list.wt"

@@ -87,10 +87,15 @@ is called.
 - Linux:
     - /usr
     - /usr/local
+    - /opt
 - Windows:
+    - C:\Program Files (x86)\
     - C:\Program Files\
 - OSX:
     - /usr
+    - /usr/local
+    - /opt
+    - /opt/local
 
 ### nostra init
 `nostra init` is an interactive command line tool that can be used to create a new package.
