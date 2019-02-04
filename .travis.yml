@@ -6,6 +6,10 @@ os:
 language:
   - cpp
 
+compiler:
+  - gcc
+  - clang
+
 env:
   - BUILD_SHARED=ON
   - BUILD_SHARED=OFF
@@ -15,5 +19,5 @@ script:
   - cd build
   - cmake -DNOSTRA_BUILD_SHARED_TESTS=$BUILD_SHARED ..
   - cmake --build .
-  - ctest --output-on-failure
+  - ctest -C Debug --output-on-failure
   
