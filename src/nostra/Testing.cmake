@@ -265,22 +265,20 @@ endfunction()
 # Note that, the file extensions of the provided source files are ignored - they will always be compiled as C code.
 #
 # This function can only be called, if nostra_project() was called first. Also CTest needs to be included using 
-# include() and enable_testing() needs to have been called.
+# include().
 #
 # Additionally, the tests added by this function will only be added and build if BUILD_TESTING is TRUE.
 #]=]
 function(nostra_add_c_test)
-    if(BUILD_TESTING)
-        cmake_parse_arguments(FUNC "TEST_CPP" "" "" "${ARGN}")
-
-        _nostra_add_ex_test_helper("c" "${FUNC_UNPARSED_ARGUMENTS}")
-
-        # remove NOCOPY from the unparsed args b/c c.cpp must be copied
-        cmake_parse_arguments(FUNC "NOCOPY" "" "" "${FUNC_UNPARSED_ARGUMENTS}") 
-
-        if(FUNC_TEST_CPP)
-            _nostra_add_ex_test_helper("c.cpp" "${FUNC_UNPARSED_ARGUMENTS}")
-        endif()
+    cmake_parse_arguments(FUNC "TEST_CPP" "" "" "${ARGN}")
+    
+    _nostra_add_ex_test_helper("c" "${FUNC_UNPARSED_ARGUMENTS}")
+    
+    # remove NOCOPY from the unparsed args b/c c.cpp must be copied
+    cmake_parse_arguments(FUNC "NOCOPY" "" "" "${FUNC_UNPARSED_ARGUMENTS}") 
+    
+    if(FUNC_TEST_CPP)
+        _nostra_add_ex_test_helper("c.cpp" "${FUNC_UNPARSED_ARGUMENTS}")
     endif()
 endfunction()
 
@@ -336,15 +334,13 @@ endfunction()
 # Note that, the file extensions of the provided source files are ignored - they will always be compiled as C++ code.
 #
 # This function can only be called, if nostra_project() was called first. Also CTest needs to be included using 
-# include() and enable_testing() needs to have been called.
+# include().
 #
 # Additionally, the tests added by this function will only be added and build if BUILD_TESTING is TRUE.
 #]=]
 # TODO add links to nostra convention
 function(nostra_add_cpp_test)
-    if(BUILD_TESTING)
-        _nostra_add_ex_test_helper("cpp" "${ARGN}")
-    endif()
+    _nostra_add_ex_test_helper("cpp" "${ARGN}")
 endfunction()
 
 #[[
@@ -435,14 +431,12 @@ endfunction()
 # Note that, the file extensions of the provided source files are ignored - they will always be compiled as C code.
 #
 # This function can only be called, if nostra_project() was called first. Also CTest needs to be included using 
-# include() and enable_testing() needs to have been called.
+# include().
 #
 # Additionally, the tests added by this function will only be added and build if BUILD_TESTING is TRUE.
 #]=]
 function(nostra_add_c_compile_test)
-    if(BUILD_TESTING)
-        _nostra_add_bu_test_helper("c" ${ARGN})    
-    endif()
+    _nostra_add_bu_test_helper("c" ${ARGN})    
 endfunction()
 
 #[=[
@@ -490,12 +484,10 @@ endfunction()
 # Note that, the file extensions of the provided source files are ignored - they will always be compiled as C++ code.
 #
 # This function can only be called, if nostra_project() was called first. Also CTest needs to be included using 
-# include() and enable_testing() needs to have been called.
+# include().
 #
 # Additionally, the tests added by this function will only be added and build if BUILD_TESTING is TRUE.
 #]=]
 function(nostra_add_cpp_compile_test)
-    if(BUILD_TESTING)
-        _nostra_add_bu_test_helper("cpp" ${ARGN})     
-    endif() 
+    _nostra_add_bu_test_helper("cpp" ${ARGN})     
 endfunction()

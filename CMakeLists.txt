@@ -11,8 +11,6 @@ include("src/nostra/Nostra.cmake")
 
 include(CTest)
 
-enable_testing()
-
 add_test(
     NAME
         "ncm.cmake.nostra_prefix_list.wt"
@@ -164,9 +162,7 @@ install(
         "src/nostra/Testing.cmake" 
         "src/nostra/Utility.cmake"
     DESTINATION
-        "nostra"
-    COMPONENT
-        "Required")
+        "nostra")
 
 install(
     FILES
@@ -176,9 +172,7 @@ install(
         "cmake/in/cmake/Targets.cmake.in"
         "cmake/in/cmake/welcome.txt.in"
     DESTINATION
-        "cmake/in/cmake"
-    COMPONENT
-        "Required")
+        "cmake/in/cmake")
 
 install(
     FILES
@@ -187,9 +181,7 @@ install(
         "cmake/in/doc/DoxygenLayout.xml.in"
         "cmake/in/doc/style.css.in"
     DESTINATION
-        "cmake/in/doc"
-    COMPONENT
-        "Required")
+        "cmake/in/doc")
         
 install(
     FILES
@@ -201,36 +193,29 @@ install(
         "cmake/in/LICENSE.in"
         "cmake/in/README.md.in"
     DESTINATION
-        "cmake/in"
-    COMPONENT
-        "Required")
+        "cmake/in")
 
 install(
     FILES
         "cmake/export.h.in"
     DESTINATION
-        "cmake/"
-    COMPONENT
-        "Required")
+        "cmake/")
 
-if(UNIX)
-    install(
-        FILES
-            "src/nostra/nostra.sh"
-        DESTINATION
-            "bin"
-        PERMISSIONS
-            OWNER_WRITE 
-            OWNER_READ 
-            OWNER_EXECUTE 
-            GROUP_READ
-            GROUP_EXECUTE
-            WORLD_READ
-            WORLD_EXECUTE
-        RENAME
-            "nostra"
-    )
-endif()
+install(
+    FILES
+        "src/nostra/nostra.sh"
+    DESTINATION
+        "bin"
+    PERMISSIONS
+        OWNER_WRITE 
+        OWNER_READ 
+        OWNER_EXECUTE 
+        GROUP_READ
+        GROUP_EXECUTE
+        WORLD_READ
+        WORLD_EXECUTE
+    RENAME
+        "nostra")
 
 include(CMakePackageConfigHelpers)
 
@@ -242,17 +227,13 @@ install(
     FILES
         "${CMAKE_BINARY_DIR}/NostraSocketWrapperConfigVersion.cmake"
     DESTINATION
-        "share/NostraBuild"
-    COMPONENT
-        "Required")
+        "share/NostraBuild")
 
 install(
     FILES
         "${CMAKE_SOURCE_DIR}/cmake/NostraBuildConfig.cmake"
     DESTINATION
-        "share/NostraBuild"
-    COMPONENT
-        "Required")
+        "share/NostraBuild")
 
 configure_file("cmake/CPackConfig.cmake.in" "cmake/CPackConfig.cmake" @ONLY)
 include("${CMAKE_BINARY_DIR}/cmake/CPackConfig.cmake")

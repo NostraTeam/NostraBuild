@@ -89,7 +89,7 @@ nostra_generate_doc()
 
 
 include(CTest)
-enable_testing()
+
 
 # Tests start
     # Add tests here...
