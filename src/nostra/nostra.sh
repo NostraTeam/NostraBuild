@@ -112,21 +112,16 @@ ask_for_version()
         if var_matches "${VERSION}" "^[0-9][0-9]*$"
         then
             VERSION="${VERSION}.0.0.0"
-            printf "1\n"
         else
             #Format: x.y ; extends to x.y.0.0
             if var_matches "${VERSION}" "^[0-9][0-9]*\.[0-9][0-9]*$"
             then
                 VERSION="${VERSION}.0.0"
-            printf "2\n"
             else
                 #Format: x.y.z ; extends to x.y.z.0
                 if var_matches "${VERSION}" "^[0-9][0-9]\.[0-9][0-9]*\.[0-9][0-9]*$"
                 then
                     VERSION="${VERSION}.0"
-                    printf "3\n"
-                else
-                    printf "4\n"
                 fi
             fi
         fi
@@ -278,8 +273,8 @@ then
     then
         init
     else
-        print_usage
+        print_usage "$0"
     fi
 else
-    print_usage
+    print_usage "$0"
 fi
