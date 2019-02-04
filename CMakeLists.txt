@@ -13,7 +13,7 @@ include(CTest)
 
 add_test(
     NAME
-        "ncm.cmake.nostra_prefix_list.wt"
+        "nbu.cmake.nostra_prefix_list.wt"
     COMMAND
         "cmake" "-P" "nostra_prefix_list.cmake"
     WORKING_DIRECTORY
@@ -21,7 +21,7 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake.nostra_suffix_list.wt"
+        "nbu.cmake.nostra_suffix_list.wt"
     COMMAND
         "cmake" "-P" "nostra_suffix_list.cmake"
     WORKING_DIRECTORY
@@ -29,7 +29,7 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake._nostra_check_no_parameters.wt"
+        "nbu.cmake._nostra_check_no_parameters.wt"
     COMMAND
         "cmake" "-P" "_nostra_check_no_parameters.cmake"
     WORKING_DIRECTORY
@@ -37,7 +37,7 @@ add_test(
         
 add_test(
     NAME
-        "ncm.cmake._nostra_check_parameter.wt"
+        "nbu.cmake._nostra_check_parameter.wt"
     COMMAND
         "cmake" "-P" "_nostra_check_parameter.cmake"
     WORKING_DIRECTORY
@@ -62,7 +62,7 @@ endif()
 
 add_test(
     NAME
-        "ncm.cmake.nostra_add_c_test.wt"
+        "nbu.cmake.nostra_add_c_test.wt"
     COMMAND
         "${CMAKE_COMMAND}"
             "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject" 
@@ -73,7 +73,7 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake.nostra_add_cpp_test.wt"
+        "nbu.cmake.nostra_add_cpp_test.wt"
     COMMAND
         "${CMAKE_COMMAND}"
             "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject" 
@@ -84,7 +84,7 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake.nostra_add_compile_test.wt"
+        "nbu.cmake.nostra_add_compile_test.wt"
     COMMAND
         "${CMAKE_COMMAND}"
             "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject" 
@@ -95,7 +95,7 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_nofail"
+        "nbu.cmake.general_function_tests_nofail"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
@@ -103,53 +103,53 @@ add_test(
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_fail.1"
+        "nbu.cmake.general_function_tests_fail.1"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/build")
 
-set_tests_properties("ncm.cmake.general_function_tests_fail.1" PROPERTIES WILL_FAIL "ON")
+set_tests_properties("nbu.cmake.general_function_tests_fail.1" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_fail.2"
+        "nbu.cmake.general_function_tests_fail.2"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
        
-set_tests_properties("ncm.cmake.general_function_tests_fail.2" PROPERTIES WILL_FAIL "ON")
+set_tests_properties("nbu.cmake.general_function_tests_fail.2" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_fail.3"
+        "nbu.cmake.general_function_tests_fail.3"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.3/build")
        
-set_tests_properties("ncm.cmake.general_function_tests_fail.3" PROPERTIES WILL_FAIL "ON")
+set_tests_properties("nbu.cmake.general_function_tests_fail.3" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_fail.4"
+        "nbu.cmake.general_function_tests_fail.4"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.4/build")
 
-set_tests_properties("ncm.cmake.general_function_tests_fail.4" PROPERTIES WILL_FAIL "ON")
+set_tests_properties("nbu.cmake.general_function_tests_fail.4" PROPERTIES WILL_FAIL "ON")
 
 add_test(
     NAME
-        "ncm.cmake.general_function_tests_fail.5"
+        "nbu.cmake.general_function_tests_fail.5"
     COMMAND 
         "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
 
-set_tests_properties("ncm.cmake.general_function_tests_fail.5" PROPERTIES WILL_FAIL "ON")  
+set_tests_properties("nbu.cmake.general_function_tests_fail.5" PROPERTIES WILL_FAIL "ON")  
 
 install(
     FILES 
