@@ -3,7 +3,7 @@
 print_usage()
 {
     printf "Usage:\n"
-    printf "$1 init: Initialize a new Nostra package.\n"
+    printf "$1 init: Initialize a new Nostra project.\n"
 }
 
 print_vertical_line()
@@ -49,7 +49,7 @@ var_does_not_match()
 
 ask_for_name()
 {
-    printf "What is the name of the package (without a leading 'Nostra')?\n"
+    printf "What is the name of the project (without a leading 'Nostra')?\n"
     printf "The name can consist only of letters.\n"
     printf "==> "
     read NAME
@@ -59,16 +59,16 @@ ask_for_name()
         printf "The name has the wrong format.\n"
         ask_for_name
     else
-        printf "The name is '${NAME}'. The final name of the package will be 'Nostra${NAME}'.\n"
+        printf "The name is '${NAME}'. The final name of the project will be 'Nostra${NAME}'.\n"
     fi
 }
 
 ask_for_prefix()
 {
-    printf "What is the prefix of the package? The prefix is a short, optimally three letter\n"
-    printf "long abbreviation of the package name.\n"
+    printf "What is the prefix of the project? The prefix is a short, optimally three letter\n"
+    printf "long abbreviation of the project name.\n"
     printf "Prefixes consist of only lowercase letters. They have a minimum lentgth of\n"
-    printf "three (3). For example, the prefix of the package 'Nostra Utils' is 'nou'.\n"
+    printf "three (3). For example, the prefix of the project 'Nostra Utils' is 'nou'.\n"
     printf "==> "
     read PREFIX
 
@@ -83,7 +83,7 @@ ask_for_prefix()
 
 ask_for_description()
 {
-    printf "Please give a short description for the package.\n"
+    printf "Please give a short description for the project.\n"
     printf "==> "
     read DESCRIPTION
 
@@ -92,7 +92,7 @@ ask_for_description()
 
 ask_for_version()
 {
-    printf "Please give the initial version of the package. The version needs to be\n"
+    printf "Please give the initial version of the project. The version needs to be\n"
     printf "given in in the format <major>.<minor>.<patch>.<tweak>, e.g. 1.0.2.0.\n"
     printf "Entering an empty string will set the initial version to 1.0.0.0.\n"
     printf "==> "
@@ -147,7 +147,7 @@ ask_for_root_dir()
 
 ask_for_clang_format()
 {
-    printf "Should the package use clang-format? Y/N\n"
+    printf "Should the project use clang-format? Y/N\n"
     printf "==> "
     read USE_CLANG_FORMAT
 
@@ -170,7 +170,7 @@ ask_for_clang_format()
 
 ask_for_clang_tidy()
 {
-    printf "Should the package use clang-tidy? Y/N\n"
+    printf "Should the project use clang-tidy? Y/N\n"
     printf "==> "
     read USE_CLANG_TIDY
 
@@ -193,7 +193,7 @@ ask_for_clang_tidy()
 
 ask_for_config_h()
 {
-    printf "Should the package use a config.h file? Y/N\n"
+    printf "Should the project use a config.h file? Y/N\n"
     printf "==> "
     read USE_CONFIG_H
 
@@ -216,8 +216,8 @@ ask_for_config_h()
 
 generate_files()
 {
-    # Get location of the script file. Location is <package root>/bin. CMake script is in 
-    # <package root>/nostra/CreateProject.cmake
+    # Get location of the script file. Location is <project root>/bin. CMake script is in 
+    # <project root>/nostra/CreateProject.cmake
     SCRIPT=$(readlink -f "$0")
     SCRIPTPATH=$(dirname "$SCRIPT")
 
@@ -235,10 +235,10 @@ generate_files()
 
 init()
 {
-    printf "Welcome to the interactive Nostra package creation.\n"
-    printf "This tool will walk you through the creation of your package.\n"
+    printf "Welcome to the interactive Nostra project creation.\n"
+    printf "This tool will walk you through the creation of your project.\n"
     printf "\n"
-    printf "The tool will ask you for input to customize the package. Please enter the\n"
+    printf "The tool will ask you for input to customize the project. Please enter the\n"
     printf "desired values and accept them by pressing ENTER.\n"
     print_vertical_line
     ask_for_name
@@ -257,7 +257,7 @@ init()
     printf "\n"
     ask_for_config_h
     print_vertical_line
-    printf "The interactive dialog is now over. The package files will now be generated.\n"
+    printf "The interactive dialog is now over. The project files will now be generated.\n"
 
     if generate_files
     then

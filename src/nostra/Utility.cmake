@@ -225,9 +225,9 @@ function(nostra_add_library NAME)
 endfunction()
 
 #[=[
-# Adds clang-tidy to the current package based on whether a .clang-tidy file is in the root directory of the package.
+# Adds clang-tidy to the current project based on whether a .clang-tidy file is in the root directory of the project.
 #
-# This function does NOT need to be called by a user, it always gets automatically called when the NostraBuild package
+# This function does NOT need to be called by a user, it always gets automatically called when the NostraBuild project
 # is included in a CMakeLists.txt file.
 #]=]
 function(nostra_clang_tidy)

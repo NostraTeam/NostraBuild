@@ -4,7 +4,7 @@ option(NOSTRA_BUILD_SHARED_TESTS "If enabled, the test libraries will be shared 
 
 project(NostraBuild
 	VERSION 1.0.0.0
-	DESCRIPTION "CMake module(s) and script(s) that are used to build Nostra packages."
+	DESCRIPTION "CMake module(s) and script(s) that are used to build Nostra projects."
 	LANGUAGES NONE)
 
 include("src/nostra/Nostra.cmake")
