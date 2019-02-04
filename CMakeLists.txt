@@ -45,19 +45,7 @@ add_test(
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/nostra_list_functions")
         
-# TODO: Clean up the following process, if possible, do not rely on platform specific cmd line interpreters
-
-# Choose cmd line interpreter for the command; cmd.exe on Windows, Bourne Shell on Unix. 
-if(WIN32)
-    set(NOSTRA_CMAKE_CTEST_COMMAND "cmd.exe" "/C")
-else()
-    set(NOSTRA_CMAKE_CTEST_COMMAND "sh" "-c")
-endif()
-
 # Make sure the working directories exists for the next tests
-file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject/build")
-file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject/build")
-file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_nofail/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/build")
 file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
@@ -68,6 +56,8 @@ file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/buil
 # Each of these tests call the commands "cmake ..", "cmake --build .", "ctest"; in that order and all of them need
 # to be successful.
 
+set(NOSTRA_CTEST_ADDITIONAL_FLAGS "--output-on-failure;-C;Debug")
+
 if(NOSTRA_BUILD_SHARED_TESTS)
     set(NOSTRA_CMAKE_ADDITIONAL_FLAGS "-DNOSTRA_BUILD_SHARED=${NOSTRA_BUILD_SHARED_TESTS}")
 endif()
@@ -76,31 +66,40 @@ add_test(
     NAME
         "ncm.cmake.nostra_add_c_test.wt"
     COMMAND
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
-    WORKING_DIRECTORY
-        "${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject/build")
-      
+        "${CMAKE_COMMAND}"
+            "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_c_test/CTestProject" 
+            "-DNOSTRA_CMAKE_ADDITIONAL_FLAGS=${NOSTRA_CMAKE_ADDITIONAL_FLAGS}" 
+            "-DNOSTRA_CTEST_ADDITIONAL_FLAGS=${NOSTRA_CTEST_ADDITIONAL_FLAGS}" 
+            "-P" 
+                "${CMAKE_SOURCE_DIR}/test/TestRunner.cmake")
+
 add_test(
     NAME
         "ncm.cmake.nostra_add_cpp_test.wt"
-    COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND}"
-    WORKING_DIRECTORY
-        "${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject/build")
+    COMMAND
+        "${CMAKE_COMMAND}"
+            "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_cpp_test/CppTestProject" 
+            "-DNOSTRA_CMAKE_ADDITIONAL_FLAGS=${NOSTRA_CMAKE_ADDITIONAL_FLAGS}" 
+            "-DNOSTRA_CTEST_ADDITIONAL_FLAGS=${NOSTRA_CTEST_ADDITIONAL_FLAGS}" 
+            "-P" 
+                "${CMAKE_SOURCE_DIR}/test/TestRunner.cmake")
 
 add_test(
     NAME
         "ncm.cmake.nostra_add_compile_test.wt"
-    COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} ${NOSTRA_CMAKE_ADDITIONAL_FLAGS} .. && ${CMAKE_COMMAND} --build . && ${CMAKE_CTEST_COMMAND} --output-on-failure"
-    WORKING_DIRECTORY
-        "${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject/build")
-        
+    COMMAND
+        "${CMAKE_COMMAND}"
+            "-DNOSTRA_TEST_PROJECT_ROOT=${CMAKE_SOURCE_DIR}/test/nostra_add_compile_test/CompileTestProject" 
+            "-DNOSTRA_CMAKE_ADDITIONAL_FLAGS=${NOSTRA_CMAKE_ADDITIONAL_FLAGS}" 
+            "-DNOSTRA_CTEST_ADDITIONAL_FLAGS=${NOSTRA_CTEST_ADDITIONAL_FLAGS}" 
+            "-P" 
+                "${CMAKE_SOURCE_DIR}/test/TestRunner.cmake")
+
 add_test(
     NAME
         "ncm.cmake.general_function_tests_nofail"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_nofail/build")
 
@@ -108,7 +107,7 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.1"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.1/build")
 
@@ -118,7 +117,7 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.2"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.2/build")
        
@@ -128,7 +127,7 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.3"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.3/build")
        
@@ -138,7 +137,7 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.4"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.4/build")
 
@@ -148,7 +147,7 @@ add_test(
     NAME
         "ncm.cmake.general_function_tests_fail.5"
     COMMAND 
-        ${NOSTRA_CMAKE_CTEST_COMMAND} "${CMAKE_COMMAND} .."
+        "${CMAKE_COMMAND}" ".."
     WORKING_DIRECTORY
         "${CMAKE_SOURCE_DIR}/test/general_function_tests_fail.5/build")
 
