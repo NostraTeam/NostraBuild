@@ -47,6 +47,42 @@ var_does_not_match()
     fi
 }
 
+ask_yes_no()
+{
+    if  [ "$#" -ne "1" ] || [ "$1" != "yes" ] && [ "$1" = "no" ]
+    then
+        printf "ask_yes_no() was used incorrectly."
+    fi
+
+    read INPUT
+
+    if [ "${INPUT}" = "Y" ] || [ "${INPUT}" = "N" ] ||
+       [ "${INPUT}" = "y" ] || [ "${INPUT}" = "n" ]
+    then
+        if [ "${INPUT}" = "Y" ] || [ "${INPUT}" = "y" ]
+        then
+            return 0
+        else
+            return 1
+        fi
+    else
+
+        if [ "${INPUT}" = "" ]
+        then
+            # Return default value
+            if [ "$1" = "yes" ]
+            then
+                return 0
+            else
+                return 1
+            fi
+        else
+            printf "Invalid input.\n"
+            ask_yes_no
+        fi
+    fi
+}
+
 ask_for_name()
 {
     printf "What is the name of the project (without a leading 'Nostra')?\n"
@@ -145,72 +181,88 @@ ask_for_root_dir()
     printf "The files will be generated into the directory '$ROOT_DIR'\n"
 }
 
+ask_for_creator_name()
+{
+    printf "What is the name of the creator of the project?\n"
+    printf "==> "
+
+    read CREATOR_NAME
+
+    printf "The creator of the project is '${CREATOR_NAME}'.\n"
+}
+
+ask_for_mit()
+{
+    printf "Does the project use the MIT license? Y/N (Default: Y)\n"
+    printf "==> "
+
+    if ask_yes_no "yes"
+    then
+        USE_MIT="ON"
+        printf "Using MIT license.\n"
+
+        printf "\n"
+        ask_for_creator_name
+    else
+        USE_MIT="OFF"
+        printf "Not using MIT license.\n"
+    fi
+}
+
+ask_for_github()
+{
+    printf "Please enter the link to the project's GitHub repository. Entering an empty\n"
+    printf "string will set no link.\n"
+    printf "Note: This will not initialize a new Git repository on your local machine.\n"
+    printf "==> "
+
+    read GITHUB_LINK
+
+    printf "The GitHub Link is '${GITHUB_LINK}'.\n"
+}
+
 ask_for_clang_format()
 {
-    printf "Should the project use clang-format? Y/N\n"
+    printf "Should the project use clang-format? Y/N (Default: Y)\n"
     printf "==> "
-    read USE_CLANG_FORMAT
 
-    if [ "${USE_CLANG_FORMAT}" = "Y" ] || [ "${USE_CLANG_FORMAT}" = "N" ] ||
-       [ "${USE_CLANG_FORMAT}" = "y" ] || [ "${USE_CLANG_FORMAT}" = "n" ]
+    if ask_yes_no "yes"
     then
-        if [ "${USE_CLANG_FORMAT}" = "Y" ] || [ "${USE_CLANG_FORMAT}" = "y" ]
-        then
-            USE_CLANG_FORMAT="ON"
-            printf "Using clang-format.\n"
-        else
-            USE_CLANG_FORMAT="OFF"
-            printf "Not using clang-format.\n"
-        fi
+        USE_CLANG_FORMAT="ON"
+        printf "Using clang-format.\n"
     else
-        printf "Invalid input.\n"
-        ask_for_clang_format
+        USE_CLANG_FORMAT="OFF"
+        printf "Not using clang-format.\n"
     fi
 }
 
 ask_for_clang_tidy()
 {
-    printf "Should the project use clang-tidy? Y/N\n"
+    printf "Should the project use clang-tidy? Y/N (Default: Y)\n"
     printf "==> "
-    read USE_CLANG_TIDY
 
-    if [ "${USE_CLANG_TIDY}" = "Y" ] || [ "${USE_CLANG_TIDY}" = "N" ] ||
-       [ "${USE_CLANG_TIDY}" = "y" ] || [ "${USE_CLANG_TIDY}" = "n" ]
+    if ask_yes_no "yes"
     then
-        if [ "${USE_CLANG_TIDY}" = "Y" ] || [ "${USE_CLANG_TIDY}" = "y" ]
-        then
-            USE_CLANG_TIDY="ON"
-            printf "Using clang-tidy.\n"
-        else
-            USE_CLANG_TIDY="OFF"
-            printf "Not using clang-tidy.\n"
-        fi
+        USE_CLANG_TIDY="ON"
+        printf "Using clang-tidy.\n"
     else
-        printf "Invalid input.\n"
-        ask_for_clang_tidy
+        USE_CLANG_TIDY="OFF"
+        printf "Not using clang-tidy.\n"
     fi
 }
 
 ask_for_config_h()
 {
-    printf "Should the project use a config.h file? Y/N\n"
+    printf "Should the project use a config.h file? Y/N (Default: Y)\n"
     printf "==> "
-    read USE_CONFIG_H
 
-    if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "N" ] ||
-       [ "${USE_CONFIG_H}" = "y" ] || [ "${USE_CONFIG_H}" = "n" ]
+    if ask_yes_no "yes"
     then
-        if [ "${USE_CONFIG_H}" = "Y" ] || [ "${USE_CONFIG_H}" = "y" ]
-        then
-            USE_CONFIG_H="ON"
-            printf "Using config.h file.\n"
-        else
-            USE_CONFIG_H="OFF"
-            printf "Not using config.h file.\n"
-        fi
+        USE_CONFIG_H="ON"
+        printf "Using config.h file.\n"
     else
-        printf "Invalid input.\n"
-        ask_for_config_h
+        USE_CONFIG_H="OFF"
+        printf "Not using config.h file.\n"
     fi
 }
 
@@ -226,7 +278,9 @@ generate_files()
     cmake -DNOSTRA_NAME="${NAME}" -DNOSTRA_PREFIX="${PREFIX}" -DNOSTRA_DESCRIPTION="${DESCRIPTION}" \
     -DNOSTRA_OUT_ROOT="${ROOT_DIR}" -DNOSTRA_HAVE_CLANG_FORMAT="${USE_CLANG_FORMAT}" \
     -DNOSTRA_HAVE_CLANG_TIDY="${USE_CLANG_TIDY}" -DNOSTRA_HAVE_CONFIG_H="${USE_CONFIG_H}" \
-    -DNOSTRA_INITIAL_VERSION="${VERSION}" -P "${SCRIPTPATH}/../nostra/CreateProject.cmake" > /dev/null
+    -DNOSTRA_INITIAL_VERSION="${VERSION}" -DNOSTRA_HAVE_MIT="${USE_MIT}" -DNOSTRA_CREATOR_NAME="${CREATOR_NAME}" \
+    -DNOSTRA_GITHUB_LINK="${GITHUB_LINK}" \
+    -P "${SCRIPTPATH}/../nostra/CreateProject.cmake" > /dev/null
 
     printf "\n"
 
@@ -248,6 +302,10 @@ init()
     ask_for_description
     printf "\n"
     ask_for_version
+    printf "\n"
+    ask_for_mit
+    printf "\n"
+    ask_for_github
     printf "\n"
     ask_for_root_dir
     printf "\n"

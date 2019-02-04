@@ -9,10 +9,14 @@ set(NOSTRA_DESCRIPTION "" CACHE STRING "The description of the project.")
 set(NOSTRA_LANGUAGES "CXX" CACHE STRING "The enabled languages. C for C, CXX for C++. Multiple languages need to be \
 seperated with spaces.")
 set(NOSTRA_LOGO "" CACHE STRING "The path to the logo (relative to the project root.) If empty, no logo is used.")
+set(NOSTRA_CREATOR_NAME "" CACHE STRING "The name of the creator of the project. Will be inserted into the MIT license\
+ if one should be added.")
+set(NOSTRA_GITHUB_LINK "" CACHE STRING "The link to the GitHub repository. Leave blank for no repository.")
 
 set(NOSTRA_OUT_ROOT "." CACHE PATH "The root directory of the new project. All files / directories will be put here.")
 set(NOSTRA_IN_ROOT "${CMAKE_CURRENT_LIST_DIR}/..")
 set(NOSTRA_INITIAL_VERSION "1.0.0.0" CACHE STRING "The initial version of the project.")
+option(NOSTRA_HAVE_MIT "If enabled, a default MIT license file will be added.")
 option(NOSTRA_HAVE_CLANG_FORMAT "If disabled, .clang-format will not be part of the new project tree." ON)
 option(NOSTRA_HAVE_CLANG_TIDY "If disabled, .clang-tidy will not be part of the new project tree." ON)
 option(NOSTRA_HAVE_CONFIG_H "If disabled, no config.h will be used by the new project." ON)
@@ -28,6 +32,14 @@ if(NOT NOSTRA_LOGO STREQUAL "")
     set(NOSTRA_LOGO_ACTUAL "LOGO ${NOSTRA_LOGO}")
 else()
     set(NOSTRA_LOGO_ACTUAL "")
+endif()
+
+if(NOSTRA_GITHUB_LINK STREQUAL "")
+    set(NOSTRA_GITHUB_LINK_ACTUAL "<!--The GitHubLink goes here-->")
+    set(NOSTRA_GITHUB_CLONE_LINK "<!--The git clone link goes here, this is usually the GitHub link plus \".git\"-->")
+else()
+    set(NOSTRA_GITHUB_LINK_ACTUAL "${NOSTRA_GITHUB_LINK}")
+    set(NOSTRA_GITHUB_CLONE_LINK "${NOSTRA_GITHUB_LINK}.git")
 endif()
 
 function(nostra_create_dir DIRNAME)
@@ -79,6 +91,8 @@ nostra_create_dir("include/nostra/${NOSTRA_NAME_LOWER}")
 nostra_create_dir("src")
 nostra_create_dir("test")
 
+string(TIMESTAMP NOSTRA_CURRENT_YEAR "%Y") # For the LICENSE file
+
 # Root directory files
 if(NOSTRA_HAVE_CLANG_FORMAT)
     nostra_configure_file("cmake/in/.clang-format.in" ".clang-format")
@@ -88,7 +102,9 @@ if(NOSTRA_HAVE_CLANG_TIDY)
 endif()
 nostra_configure_file("cmake/in/.gitattributes.in" ".gitattributes")
 nostra_configure_file("cmake/in/.gitignore.in" ".gitignore")
-nostra_configure_file("cmake/in/LICENSE.in" "LICENSE")
+if(NOSTRA_HAVE_MIT)
+    nostra_configure_file("cmake/in/LICENSE.in" "LICENSE")
+endif()
 nostra_configure_file("cmake/in/README.md.in" "README.md")
 nostra_configure_file("cmake/in/CMakeLists.txt.in" "CMakeLists.txt")
 
