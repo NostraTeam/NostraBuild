@@ -8,7 +8,7 @@ nostra_project("@NOSTRA_NAME_CAMEL@" "@NOSTRA_PREFIX_LOWER@"
     LANGUAGES   "@NOSTRA_LANGUAGES@"
     @NOSTRA_LOGO_ACTUAL@)
 
-set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "") # Source files should be added here
+set(@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES "src/@NOSTRA_NAME_LOWER@.cpp") # Source files should be added here
 
 nostra_add_library(@NOSTRA_NAME@ ${@NOSTRA_PREFIX_UPPER@_@NOSTRA_NAME@_SOURCES})
 add_library(Nostra::@NOSTRA_NAME@ ALIAS @NOSTRA_NAME@)
@@ -59,10 +59,8 @@ nostra_generate_export_header(@NOSTRA_NAME@ OUTPUT_DIR "${CMAKE_CURRENT_BINARY_D
 install(TARGETS @NOSTRA_NAME@ EXPORT ${PROJECT_EXPORT}
 	RUNTIME 
 		DESTINATION "bin"
-		COMPONENT "Required"
 	LIBRARY 
 		DESTINATION "lib"
-		COMPONENT "Required"
 	ARCHIVE	
 		DESTINATION "lib/static"
 		COMPONENT "Develop"
@@ -88,9 +86,6 @@ nostra_generate_doc()
 
 
 
-include(CTest)
-
-
 # Tests start
     # Add tests here...
 # Tests end
@@ -105,15 +100,13 @@ include(CTest)
 
 install(FILES "README.md" 
 	DESTINATION	
-		"." 
-	COMPONENT 
-		"Required")
+		".")
 
-install(FILES "LICENSE.txt"
-	DESTINATION	
-		"." 
-	COMPONENT 
-		"Required")
+if(EXISTS "LICENSE")
+    install(FILES "LICENSE"
+    	DESTINATION	
+            ".")
+endif()
 
 
         
@@ -137,15 +130,13 @@ install(EXPORT ${PROJECT_EXPORT}
     NAMESPACE
         Nostra::
     DESTINATION
-        ${CONFIG_PACKAGE_LOCATION}
-    COMPONENT
-        "Required")
+        "share/@NOSTRA_NAME_CAMEL@")
 
 install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/@NOSTRA_NAME_CAMEL@Config.cmake"
   DESTINATION
-    ${CONFIG_PACKAGE_LOCATION}
+    "share/@NOSTRA_NAME_CAMEL@"
   COMPONENT
     "Develop")
 
@@ -154,4 +145,3 @@ configure_file("cmake/CPackConfig.cmake.in" "cmake/CPackConfig.cmake" @ONLY)
 include("${CMAKE_CURRENT_BINARY_DIR}/cmake/CPackConfig.cmake")
 
 include(CPack)
-        

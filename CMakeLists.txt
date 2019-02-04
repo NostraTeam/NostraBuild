@@ -185,6 +185,12 @@ install(
         
 install(
     FILES
+        "cmake/in/src/main.cpp.in"
+    DESTINATION
+        "cmake/in/src")
+
+install(
+    FILES
         "cmake/in/.clang-format.in"
         "cmake/in/.clang-tidy.in"
         "cmake/in/.gitattributes.in"

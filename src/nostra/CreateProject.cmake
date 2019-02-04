@@ -123,4 +123,7 @@ nostra_configure_file("cmake/in/doc/additional_doc.dox.in" "doc/additional_doc.d
 nostra_configure_file("cmake/in/doc/style.css.in" "doc/style.css")
 nostra_configure_file("cmake/in/doc/DoxygenLayout.xml.in" "doc/DoxygenLayout.xml")
 
+# src files
+nostra_configure_file("cmake/in/src/main.cpp.in" "src/${NOSTRA_NAME_LOWER}.cpp")
+
 message("The project has successfully been created.")
