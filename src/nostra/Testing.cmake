@@ -305,10 +305,10 @@ endfunction()
 #   blackbox test).
 #
 # TEST_TARGET:
-#   The target to test, i.e. the target that the test executable will be linked aginst.
+#   The target to test, i.e. the target that the test executable will be linked against.
 # 
 # NUMBER:
-#   The number of the test. Must be a positve integer that is greater than zero (0).
+#   The number of the test. Must be a positive integer that is greater than zero (0).
 #
 # ADDITIONAL_SOURCES:
 #   Additional source files that are required aside from test.cpp. The paths that are passed are relative to 
