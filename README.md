@@ -5,7 +5,7 @@ GitHub: https://github.com/NostraTeam/NostraBuild
 
 To clone the repository to your local machine, use the command
 ```
-git clone <still no link>
+git clone https://github.com/NostraTeam/NostraBuild.git
 ```
 Alternatively, it is possible to download the repository as a ZIP archive from GitHub using the link above.
 
